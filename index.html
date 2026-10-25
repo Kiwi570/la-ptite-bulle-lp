@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La P’tite Bulle · Voyez votre futur site avant de le commander</title>
-<meta name="description" content="Votre site actuel, ou quelques mots sur votre activité, et vous explorez une maquette interactive faite pour vous. Gratuitement, sous 24 h. Une expérience P’tit Kiwi.">
+<meta name="description" content="Une maquette interactive de votre futur site, imaginée pour votre activité. Offerte, prête sous 24 h, sans engagement. Une expérience P’tit Kiwi.">
 <meta name="theme-color" content="#12172F">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
@@ -14,10 +14,12 @@
 <meta property="og:image" content="https://la-ptite-bulle-lp.vercel.app/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="La P’tite Bulle : une bulle irisée qui révèle la maquette de votre futur site">
 <link rel="canonical" href="https://la-ptite-bulle-lp.vercel.app/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="preload" href="fonts/manrope.woff" as="font" type="font/woff" crossorigin>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <script src="main.js" defer></script>
 </head>
@@ -46,12 +48,12 @@
 <span class="logo-text"><span class="logo-name">La P’tite Bulle</span><span class="logo-sub">une expérience P’tit Kiwi</span></span>
 </a>
 <nav class="nav" aria-label="Navigation principale">
-<a href="#concept" aria-current="page">Le concept</a>
+<a href="#concept" class="is-current">Le concept</a>
 <a href="#avant-apres">Avant / après</a>
 <button type="button" data-open="panel-avis">Avis</button>
 <button type="button" data-open="panel-faq">FAQ</button>
 </nav>
-<button type="button" class="btn btn-pink btn-sm" data-goto-field data-magnet>Créer ma bulle</button>
+<div class="top-right"><p class="top-badge"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.6c0 4.6-3.2 8.2-7.5 9.4-4.3-1.2-7.5-4.8-7.5-9.4V6z"/><path d="M8.6 12.2l2.4 2.3 4.4-4.6"/></svg>Partenaire Wix depuis 2019</p><button type="button" class="btn btn-pink btn-sm" data-goto-field data-magnet>Créer ma bulle</button></div>
 </header>
 
 <div class="hero-main wrap">
@@ -63,39 +65,43 @@
 <div class="field-block">
 <div class="field-head">
 <label id="lp-label" for="lp-field">Votre site actuel</label>
-<p class="rating"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#EF7AA4"/></svg><strong>4,9/5</strong> · 30 avis sur Wix</p>
+<button type="button" class="rating" data-open="panel-avis" aria-label="Note de 4,9 sur 5 sur 30 avis Wix, voir les avis"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#EF7AA4"/></svg><strong>4,9/5</strong> · 30 avis sur Wix</button>
 </div>
 
 <div id="lp-form-wrap">
 <div class="field-wrap">
-<form id="bulle-form" class="field" novalidate>
+<form id="bulle-form" class="field" novalidate data-endpoint="">
 <svg id="icon-site" class="field-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg>
 <svg id="icon-mail" class="field-icon" aria-hidden="true" viewBox="0 0 24 24" hidden><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
-<input id="lp-field" name="site" type="text" placeholder="www.votre-site.fr" autocomplete="url" inputmode="url" spellcheck="false" aria-describedby="lp-step">
+<input id="lp-field" name="site" type="text" placeholder="www.votre-site.fr" autocomplete="url" inputmode="url" spellcheck="false" aria-describedby="lp-step lp-privacy">
+<input id="lp-website" class="trap" type="text" name="lp_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 <button type="submit" class="btn btn-pink btn-field" data-magnet><span id="lp-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </form>
-<span class="badge-24">sous 24 h</span>
+<span class="badge-24">sous 24 h</span>
 </div>
 <div class="field-foot">
-<p id="lp-step" aria-live="polite">Étape 1 sur 2 · Vos coordonnées juste après.</p>
+<p id="lp-step">Étape 1 sur 2 · Vos coordonnées juste après.</p>
 <button type="button" id="lp-edit" class="text-btn" hidden>Modifier l’adresse</button>
+</div>
+<p id="lp-privacy" class="privacy" hidden>Votre e-mail sert uniquement à vous envoyer votre maquette et à en discuter avec vous.</p>
+</div>
+
+<div id="lp-done" class="done" hidden>
+<span class="done-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span>
+<span class="done-text"><strong>C’est noté ! Votre bulle arrive sous 24 h.</strong><span>Nous l’envoyons à <span id="lp-done-mail">votre adresse</span>.</span></span>
+<button type="button" id="lp-restart" class="btn btn-ghost btn-sm">Nouvelle demande</button>
 </div>
 </div>
 
-<div id="lp-done" class="done" aria-live="polite" hidden>
-<span class="done-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span>
-<span class="done-text"><strong>C’est noté ! Votre bulle arrive sous 24 h.</strong><span>Nous l’envoyons à <span id="lp-done-mail">votre adresse</span>.</span></span>
-<button type="button" id="lp-restart" class="btn btn-ghost btn-sm">Refaire</button>
-</div>
-</div>
+<p id="lp-status" class="sr-only" role="status"></p>
 
 <div class="hero-extra">
 <ul class="checks">
 <li><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg>Maquette offerte</li>
 <li><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg>Vous décidez après</li>
-<li id="lp-toggle-item"><button type="button" id="lp-toggle" class="btn btn-ghost btn-sm">Pas encore de site ?</button></li>
+<li id="lp-toggle-item"><button type="button" id="lp-toggle" class="btn btn-ghost btn-sm">Pas encore de site ?</button></li>
 </ul>
-<a href="#avant-apres" class="link-down">ou voyez d’abord un exemple avant / après<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+<a href="#avant-apres" class="link-down">ou voyez un exemple avant / après<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
 </div>
 </div>
 
@@ -162,10 +168,11 @@
 <div class="tag-pos" aria-hidden="true" style="--x:5%;--y:80%;--i:2"><span class="tag" style="--c:127,212,234;--r:3deg;--d:6s;--dl:-2s">Vos contenus</span></div>
 <div class="tag-pos" aria-hidden="true" style="--x:90%;--y:93%;--i:3"><span class="tag" style="--c:243,207,122;--r:-4deg;--d:7.5s;--dl:-4s">Vos objectifs</span></div>
 </div>
-<p class="note" aria-live="polite"><span id="lp-note-text">tapez votre adresse, elle s’éveille</span><svg aria-hidden="true" viewBox="0 0 44 44"><path d="M4 40 C 14 30, 22 20, 36 8"/><path d="M24 7 L37 7 L35 20"/></svg></p>
+<p class="note"><span id="lp-note-text">tapez votre adresse, elle s’éveille</span><svg aria-hidden="true" viewBox="0 0 44 44"><path d="M4 40 C 14 30, 22 20, 36 8"/><path d="M24 7 L37 7 L35 20"/></svg></p>
 </div>
 </div>
 
+<button type="button" id="motion-toggle" class="motion-toggle"><svg class="i-pause" aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg><svg class="i-play" aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span id="motion-label">Pause</span><span class="sr-only"> des animations</span></button>
 <a class="cue" href="#avant-apres"><span class="mouse" aria-hidden="true"><span></span></span>Avant / après</a>
 </section>
 
@@ -176,7 +183,7 @@
 
 <div class="s2-visual">
 <div id="s2-stage" class="stage2">
-<p class="paint-hint"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>Défilez pour peindre<span class="mini-progress" aria-hidden="true"><span></span></span></p>
+<p class="paint-hint"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>Faites défiler pour peindre<span class="mini-progress" aria-hidden="true"><span></span></span></p>
 
 <div class="frame-wrap">
 <div class="frame" aria-hidden="true">
@@ -221,9 +228,9 @@
 <span class="n-actions"><span class="n-btn">Prendre rendez-vous</span><span class="n-btn n-btn-ghost">Découvrir</span></span>
 </div>
 <div class="n-visual">
-<span class="n-blob" style="left:8%;top:6%;width:62%;background:#EF7AA4"></span>
-<span class="n-blob" style="left:44%;top:30%;width:58%;background:#7FD4EA"></span>
-<span class="n-blob" style="left:18%;top:58%;width:44%;background:#C3B1F7"></span>
+<span class="n-blob" style="left:8%;top:6%;width:62%;--b:#EF7AA4"></span>
+<span class="n-blob" style="left:44%;top:30%;width:58%;--b:#7FD4EA"></span>
+<span class="n-blob" style="left:18%;top:58%;width:44%;--b:#C3B1F7"></span>
 <span class="n-bubble"><span></span></span>
 <span class="n-chip n-chip-stars"><i></i><i></i><i></i><i></i><i></i></span>
 <span class="n-chip n-chip-ok"><span class="n-check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span><span class="n-chip-bar"></span></span>
@@ -263,7 +270,7 @@
 </div>
 
 <div class="year" aria-hidden="true"><span class="year-card"><span class="year-face year-old">2008</span><span class="year-face year-new">2026</span></span></div>
-<p class="year-note" aria-hidden="true"><span class="note-old">votre site aujourd’hui</span><span class="note-new">votre futur site !</span></p>
+<p class="year-note" aria-hidden="true"><span class="note-old">votre site aujourd’hui</span><span class="note-new">votre futur site !</span></p>
 <svg class="spark" aria-hidden="true" viewBox="0 0 24 24" style="left:9.5cqw;top:-7.4cqw;width:2.4cqw;fill:#EF7AA4;animation-delay:.15s"><path d="M12 2 C12.6 8.2 15.8 11.4 22 12 C15.8 12.6 12.6 15.8 12 22 C11.4 15.8 8.2 12.6 2 12 C8.2 11.4 11.4 8.2 12 2 Z"/></svg>
 <svg class="spark" aria-hidden="true" viewBox="0 0 24 24" style="left:-4.6cqw;top:4.6cqw;width:1.9cqw;fill:#7FD4EA;animation-delay:.3s"><path d="M12 2 C12.6 8.2 15.8 11.4 22 12 C15.8 12.6 12.6 15.8 12 22 C11.4 15.8 8.2 12.6 2 12 C8.2 11.4 11.4 8.2 12 2 Z"/></svg>
 <svg class="spark" aria-hidden="true" viewBox="0 0 24 24" style="left:2.6cqw;top:-8.6cqw;width:1.5cqw;fill:#F3CF7A;animation-delay:.45s"><path d="M12 2 C12.6 8.2 15.8 11.4 22 12 C15.8 12.6 12.6 15.8 12 22 C11.4 15.8 8.2 12.6 2 12 C8.2 11.4 11.4 8.2 12 2 Z"/></svg>
@@ -277,16 +284,18 @@
 <div class="s2-copy">
 <p class="eyebrow"><span class="pulse-dot" aria-hidden="true"><span></span></span>Un coup de neuf. Tout change.</p>
 <h2 id="lp-s2-title" class="s2-title">Votre site,<br><span class="pink">repeint à neuf.</span></h2>
-<p class="s2-lead">Faites défiler : le rouleau recouvre un site resté figé en 2008 et dévoile la version que nous imaginerions pour lui.</p>
+<p class="s2-lead">Faites défiler : le rouleau recouvre un site resté figé en 2008 et révèle ce qu’il pourrait devenir.</p>
+<div class="steps-wrap">
+<span class="steps-line" aria-hidden="true"><span></span></span>
 <ol class="steps">
-<li class="steps-line" aria-hidden="true"><span></span></li>
-<li class="step"><span class="step-num">01</span><span class="step-text"><span class="step-title">On part de votre site actuel</span><span class="step-sub">Vos textes, vos photos, votre histoire.</span></span></li>
-<li class="step"><span class="step-num">02</span><span class="step-text"><span class="step-title">On imagine votre nouvelle bulle</span><span class="step-sub">Identité, structure et contenus repensés.</span></span></li>
-<li class="step"><span class="step-num">03</span><span class="step-text"><span class="step-title">Vous explorez la maquette</span><span class="step-sub">Navigable, sous 24 h, sans engagement.</span></span></li>
+<li class="step"><span class="step-num" aria-hidden="true">01</span><span class="step-text"><span class="step-title">On part de votre site actuel</span><span class="step-sub">Vos textes, vos photos, votre histoire.</span></span></li>
+<li class="step"><span class="step-num" aria-hidden="true">02</span><span class="step-text"><span class="step-title">On imagine votre nouvelle bulle</span><span class="step-sub">Identité, structure et contenus repensés.</span></span></li>
+<li class="step"><span class="step-num" aria-hidden="true">03</span><span class="step-text"><span class="step-title">Vous explorez la maquette</span><span class="step-sub">Navigable, sous 24 h, sans engagement.</span></span></li>
 </ol>
+</div>
 <div class="s2-actions">
 <button type="button" class="btn btn-pink btn-lg" data-goto-field data-magnet>Créer ma bulle<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-<button type="button" id="replay" class="btn btn-ghost btn-lg replay"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>Rejouer</button>
+<button type="button" id="replay" class="btn btn-ghost btn-lg replay"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>Rejouer l’animation</button>
 </div>
 </div>
 
@@ -299,11 +308,11 @@
 <div class="footer-inner wrap">
 <p class="footer-tag"><span>Un petit lien.</span><span>Un nouveau départ.</span></p>
 <nav class="pill" aria-label="Liens utiles">
-<button type="button" data-open="panel-avis"><svg class="pill-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>Avis<svg class="ne" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></button>
+<button type="button" data-open="panel-avis"><svg class="pill-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>Avis</button>
 <span class="pill-sep" aria-hidden="true"></span>
-<button type="button" data-open="panel-faq"><svg class="pill-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3.3 6.5L4 20l1.2-3.6A8 8 0 0 1 4 12z"/></svg>FAQ<svg class="ne" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></button>
+<button type="button" data-open="panel-faq"><svg class="pill-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 3.3 6.5L4 20l1.2-3.6A8 8 0 0 1 4 12z"/></svg>FAQ</button>
 </nav>
-<p class="footer-legal"><span>© Partenaire officiel Wix 2026 · P’tit Kiwi</span><span class="legal-sep" aria-hidden="true"></span><a href="#">CGV</a></p>
+<p class="footer-legal"><span>© 2026 P’tit Kiwi · Partenaire officiel Wix</span></p>
 </div>
 </footer>
 
@@ -315,16 +324,17 @@
 <button type="button" class="close" data-close aria-label="Fermer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 <div class="score">
-<span class="score-big">4,9</span>
-<span class="score-side"><span class="sr-only">Note de 4,9 sur 5</span><span class="stars stars-lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="score-sub">sur 5 · 30 avis publiés sur Wix</span></span>
+<span class="score-big" aria-hidden="true">4,9</span>
+<span class="score-side"><span class="sr-only">Note moyenne de 4,9 sur 5, sur 30 avis publiés sur Wix</span><span class="stars stars-lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><span class="score-sub" aria-hidden="true">sur 5 · 30 avis publiés sur Wix</span></span>
 </div>
-<ul class="reviews">
+<p class="trust-line"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.6c0 4.6-3.2 8.2-7.5 9.4-4.3-1.2-7.5-4.8-7.5-9.4V6z"/><path d="M8.6 12.2l2.4 2.3 4.4-4.6"/></svg>P’tit Kiwi, partenaire Wix depuis 2019</p>
+<ul class="reviews" hidden>
 <li class="review" style="--q:rgba(239,122,164,.5)"><span class="stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p class="review-text">[Collez ici l’avis d’un client, mot pour mot]</p><p class="review-by">[Prénom N.] <span>· [Activité, ville]</span></p></li>
 <li class="review" style="--q:rgba(127,212,234,.5)"><span class="stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p class="review-text">[Collez ici un deuxième avis client]</p><p class="review-by">[Prénom N.] <span>· [Activité, ville]</span></p></li>
 <li class="review" style="--q:rgba(195,177,247,.55)"><span class="stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span><p class="review-text">[Collez ici un troisième avis client]</p><p class="review-by">[Prénom N.] <span>· [Activité, ville]</span></p></li>
 </ul>
 <div class="panel-actions">
-<a href="#" class="link-ne">Voir les 30 avis sur Wix<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+<a href="#" class="link-ne" target="_blank" rel="noopener" hidden>Voir les 30 avis sur Wix<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
 <button type="button" class="btn btn-pink" data-goto-field>Créer ma bulle<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </div>
 </div>
@@ -338,17 +348,17 @@
 <button type="button" class="close" data-close aria-label="Fermer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 <div class="faq">
-<details open><summary>La maquette est-elle vraiment gratuite ?<span class="chev" aria-hidden="true"></span></summary><p>Oui. L’aperçu de votre futur site est offert : aucun paiement, aucune carte bancaire. Vous ne payez que si vous décidez ensuite de lancer la création.</p></details>
-<details><summary>Que vais-je recevoir exactement ?<span class="chev" aria-hidden="true"></span></summary><p>Une première version personnalisée et navigable de votre site, imaginée pour votre activité. Vous la parcourez comme un vrai site, sur ordinateur comme sur mobile.</p></details>
-<details><summary>En combien de temps ?<span class="chev" aria-hidden="true"></span></summary><p>Sous 24 h après votre demande : nous vous envoyons le lien de votre bulle par e-mail.</p></details>
-<details><summary>Je n’ai pas encore de site, c’est possible ?<span class="chev" aria-hidden="true"></span></summary><p>Bien sûr. Cliquez sur « Pas encore de site ? » et décrivez votre activité en quelques mots : nous partons de là.</p></details>
-<details><summary>Et après la maquette ?<span class="chev" aria-hidden="true"></span></summary><p>Vous décidez. Si elle vous plaît, nous vous proposons un devis pour la création ou la refonte complète. Sinon, vous la gardez en souvenir, sans engagement.</p></details>
-<details><summary>Sur quelle plateforme sera mon site ?<span class="chev" aria-hidden="true"></span></summary><p>Sur Wix Studio. P’tit Kiwi est partenaire Wix depuis 2019, et vous gardez la main sur vos contenus une fois le site en ligne.</p></details>
-<details><summary>Combien coûte la création ?<span class="chev" aria-hidden="true"></span></summary><p>Chaque projet est chiffré sur devis, après la maquette. [Ajoutez ici une fourchette de prix si vous souhaitez l’afficher.]</p></details>
+<details open><summary>La maquette est-elle vraiment gratuite ?<span class="chev" aria-hidden="true"></span></summary><p>Oui. L’aperçu de votre futur site est offert : aucun paiement, aucune carte bancaire. Vous ne payez que si vous décidez ensuite de lancer la création.</p></details>
+<details><summary>Que vais-je recevoir exactement ?<span class="chev" aria-hidden="true"></span></summary><p>Une première version personnalisée et navigable de votre site, imaginée pour votre activité. Vous la parcourez comme un vrai site, sur ordinateur comme sur mobile.</p></details>
+<details><summary>En combien de temps ?<span class="chev" aria-hidden="true"></span></summary><p>Sous 24 h après votre demande : nous vous envoyons le lien de votre bulle par e-mail.</p></details>
+<details><summary>Je n’ai pas encore de site, c’est possible ?<span class="chev" aria-hidden="true"></span></summary><p>Bien sûr. Cliquez sur « Pas encore de site ? » et décrivez votre activité en quelques mots : nous partons de là.</p></details>
+<details><summary>Et après la maquette ?<span class="chev" aria-hidden="true"></span></summary><p>Vous décidez. Si elle vous plaît, nous vous proposons un devis pour la création ou la refonte complète. Sinon, vous la gardez en souvenir, sans engagement.</p></details>
+<details><summary>Sur quelle plateforme sera mon site ?<span class="chev" aria-hidden="true"></span></summary><p>Sur Wix Studio. P’tit Kiwi est partenaire Wix depuis 2019, et vous gardez la main sur vos contenus une fois le site en ligne.</p></details>
+<details><summary>Combien coûte la création ?<span class="chev" aria-hidden="true"></span></summary><p>Chaque projet est chiffré sur devis, une fois la maquette découverte : vous connaissez le prix exact avant de vous engager.</p></details>
 </div>
 <div class="ask">
-<p class="ask-title">Une autre question ?</p>
-<p class="ask-text">Écrivez-nous à [votre adresse de contact], on vous répond rapidement.</p>
+<p class="ask-title">Une autre question ?</p>
+<p class="ask-text">Posez-la-nous en répondant à l’e-mail de votre bulle : nous vous répondons rapidement.</p>
 <button type="button" class="btn btn-pink" data-goto-field>Créer ma bulle<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </div>
 </div>

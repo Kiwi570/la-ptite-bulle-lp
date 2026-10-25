@@ -5,15 +5,24 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const clamp = (v) => Math.max(0, Math.min(1, v));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const NB = ' ';
+  const NNB = ' ';
+
+  const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
+  const setHidden = (el, hidden) => { if (el.hidden !== hidden) el.hidden = hidden; };
 
   /* ---------- Écran 1 : la bulle et le formulaire ---------- */
 
   const hero = $('#concept');
   const form = $('#bulle-form');
   const field = $('#lp-field');
+  const trap = $('#lp-website');
   const label = $('#lp-label');
   const ctaLabel = $('#lp-cta-label');
   const stepText = $('#lp-step');
+  const status = $('#lp-status');
+  const privacy = $('#lp-privacy');
   const editBtn = $('#lp-edit');
   const iconSite = $('#icon-site');
   const iconMail = $('#icon-mail');
@@ -31,9 +40,17 @@
   const miniBadge = $('#mini-badge');
   const tags = $$('.tag');
   const miniBlocks = $$('[data-mini]');
+  const endpoint = (form.dataset.endpoint || '').trim();
 
-  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, boing: 0 };
+  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0 };
   let nudgeTimer = 0;
+  let announceTimer = 0;
+
+  function announce(message) {
+    clearTimeout(announceTimer);
+    status.textContent = '';
+    announceTimer = setTimeout(() => { status.textContent = message; }, 60);
+  }
 
   const slugify = (text) => text.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -53,13 +70,13 @@
   }
 
   function noteText(len, lit) {
-    if (state.step === 3) return 'c’est parti ! réponse sous 24 h';
+    if (state.step === 3) return 'c’est parti' + NNB + '! votre bulle arrive';
     if (state.nudge) {
-      if (state.step === 2) return 'une adresse e-mail valide !';
-      return state.noSite ? 'd’abord quelques mots !' : 'd’abord votre adresse !';
+      if (state.step === 2) return 'une adresse e-mail valide' + NNB + '!';
+      return state.noSite ? 'd’abord quelques mots' + NNB + '!' : 'd’abord votre adresse' + NNB + '!';
     }
     if (state.step === 2) return 'plus qu’une étape…';
-    if (lit >= 4) return 'la voilà réveillée !';
+    if (lit >= 4) return 'la voilà réveillée' + NNB + '!';
     if (len > 0) return 'elle s’éveille…';
     return state.noSite ? 'décrivez votre activité, elle s’éveille' : 'tapez votre adresse, elle s’éveille';
   }
@@ -72,43 +89,54 @@
     const isStep2 = state.step === 2;
 
     hero.style.setProperty('--lit', String(isDone ? 4.6 : lit));
-    applyPalette(asleep ? '' : shownName());
+    schedulePalette(asleep ? '' : shownName());
     tags.forEach((tag, i) => tag.classList.toggle('is-on', lit > i));
     miniBlocks.forEach((el) => el.classList.toggle('is-on', lit >= Number(el.dataset.mini)));
-    sleep.hidden = !asleep;
-    mini.hidden = asleep;
-    miniBadge.hidden = !isDone;
-    miniUrl.textContent = shownName() || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr');
-    note.textContent = noteText(len, lit);
+    setHidden(sleep, !asleep);
+    setHidden(mini, asleep);
+    setHidden(miniBadge, !isDone);
+    setText(miniUrl, shownName() || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr'));
+    setText(note, noteText(len, lit));
 
-    formWrap.hidden = isDone;
-    done.hidden = !isDone;
-    doneMail.textContent = state.email.trim() || 'votre adresse';
-    toggleItem.hidden = state.step !== 1;
-    toggleBtn.textContent = state.noSite ? 'J’ai déjà un site' : 'Pas encore de site ?';
-    editBtn.hidden = !isStep2;
-    iconSite.hidden = isStep2;
-    iconMail.hidden = !isStep2;
+    setHidden(formWrap, isDone);
+    setHidden(done, !isDone);
+    setText(doneMail, state.email.trim() || 'votre adresse');
+    setHidden(toggleItem, state.step !== 1);
+    setText(toggleBtn, state.noSite ? 'J’ai déjà un site' : 'Pas encore de site' + NNB + '?');
+    setHidden(editBtn, !isStep2);
+    setText(editBtn, state.noSite ? 'Modifier l’activité' : 'Modifier l’adresse');
+    editBtn.disabled = state.sending;
+    setHidden(privacy, !isStep2);
+    iconSite.toggleAttribute('hidden', isStep2);
+    iconMail.toggleAttribute('hidden', !isStep2);
 
+    let defaultStep;
     if (isStep2) {
-      label.textContent = 'Où envoyer votre bulle ?';
-      field.type = 'email';
+      setText(label, 'Où envoyer votre bulle' + NNB + '?');
+      if (field.type !== 'email') field.type = 'email';
       field.name = 'email';
       field.autocomplete = 'email';
       field.inputMode = 'email';
       field.placeholder = 'vous@exemple.fr';
-      ctaLabel.textContent = 'Recevoir ma bulle';
-      stepText.textContent = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
+      setText(ctaLabel, state.sending ? 'Envoi…' : 'Recevoir ma bulle');
+      defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
     } else {
-      label.textContent = state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel';
-      field.type = 'text';
+      setText(label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
+      if (field.type !== 'text') field.type = 'text';
       field.name = state.noSite ? 'activite' : 'site';
       field.autocomplete = state.noSite ? 'off' : 'url';
       field.inputMode = state.noSite ? 'text' : 'url';
       field.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
-      ctaLabel.textContent = 'Créer ma bulle';
-      stepText.textContent = 'Étape 1 sur 2 · Vos coordonnées juste après.';
+      setText(ctaLabel, 'Créer ma bulle');
+      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste après.';
     }
+    field.readOnly = state.sending;
+    setText(stepText, state.error || defaultStep);
+    stepText.classList.toggle('is-error', Boolean(state.error));
+    if (state.error) field.setAttribute('aria-invalid', 'true');
+    else field.removeAttribute('aria-invalid');
+    form.classList.toggle('is-sending', state.sending);
+
     const wanted = isStep2 ? state.email : state.site;
     if (field.value !== wanted) field.value = wanted;
   }
@@ -120,13 +148,15 @@
     stage.classList.add(state.boing % 2 ? 'boing-a' : 'boing-b');
   }
 
-  function nudge() {
+  function fail(message) {
     clearTimeout(nudgeTimer);
     state.nudge = true;
+    state.error = message;
     form.classList.remove('is-nudge');
     void form.offsetWidth;
     form.classList.add('is-nudge');
     render();
+    announce(message);
     field.focus();
     nudgeTimer = setTimeout(() => {
       state.nudge = false;
@@ -143,38 +173,97 @@
     }, delay);
   }
 
+  async function sendRequest() {
+    if (trap && trap.value) return true;
+    if (!endpoint) return true;
+    const payload = {
+      type: state.noSite ? 'activite' : 'site',
+      site: state.site.trim(),
+      email: state.email.trim(),
+      page: window.location.href,
+      date: new Date().toISOString()
+    };
+    const ctrl = 'AbortController' in window ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 10000) : 0;
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        signal: ctrl ? ctrl.signal : undefined
+      });
+      return response.ok;
+    } catch (e) {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   field.addEventListener('input', () => {
+    if (state.sending) return;
     if (state.step === 2) state.email = field.value;
     else state.site = field.value;
-    if (state.nudge) { state.nudge = false; form.classList.remove('is-nudge'); }
+    if (state.nudge || state.error) {
+      state.nudge = false;
+      state.error = '';
+      form.classList.remove('is-nudge');
+    }
     render();
   });
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (state.sending) return;
     if (state.step === 1) {
-      if (!state.site.trim()) { nudge(); return; }
+      if (!state.site.trim()) {
+        fail(state.noSite ? 'Décrivez d’abord votre activité en quelques mots.' : 'Indiquez d’abord l’adresse de votre site.');
+        return;
+      }
       state.step = 2;
+      state.error = '';
       render();
-      focusField(30);
+      field.blur();
+      try { field.focus({ preventScroll: true }); } catch (e) { field.focus(); }
+      announce('Étape 2 sur 2' + NB + ': où envoyer votre bulle' + NNB + '? Indiquez votre adresse e-mail.');
     } else if (state.step === 2) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email.trim())) { nudge(); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email.trim())) {
+        fail('Cette adresse e-mail semble incomplète.');
+        return;
+      }
+      state.sending = true;
+      state.error = '';
+      render();
+      const ok = await sendRequest();
+      state.sending = false;
+      if (!ok) {
+        fail('L’envoi n’a pas abouti. Réessayez dans un instant.');
+        return;
+      }
       state.step = 3;
       render();
       bounce();
+      announce('C’est noté' + NNB + '! Votre bulle arrive sous 24' + NB + 'h, à l’adresse ' + state.email.trim() + '.');
       restartBtn.focus({ preventScroll: true });
     }
   });
 
-  editBtn.addEventListener('click', () => { state.step = 1; render(); focusField(20); });
+  editBtn.addEventListener('click', () => {
+    if (state.sending) return;
+    state.step = 1;
+    state.error = '';
+    render();
+    focusField(20);
+  });
   restartBtn.addEventListener('click', () => {
-    Object.assign(state, { step: 1, site: '', email: '', nudge: false });
+    Object.assign(state, { step: 1, site: '', email: '', nudge: false, error: '' });
     render();
     focusField(20);
   });
   toggleBtn.addEventListener('click', () => {
     state.noSite = !state.noSite;
     state.site = '';
+    state.error = '';
     render();
     focusField(20);
   });
@@ -183,13 +272,11 @@
   $$('[data-goto-field]').forEach((btn) => btn.addEventListener('click', () => {
     const dialog = btn.closest('dialog');
     if (dialog) dialog.close();
-    if (state.step === 3) { Object.assign(state, { step: 1, site: '', email: '' }); render(); }
+    if (state.step === 3) { Object.assign(state, { step: 1, site: '', email: '', error: '' }); render(); }
     focusField(dialog ? 80 : 40);
   }));
 
   /* ---------- La bulle : ouverture, palette et réactions à la souris ---------- */
-
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
 
   function paletteFor(text) {
     let h = 2166136261;
@@ -199,12 +286,22 @@
     return [c(0, 82, 72), c(38, 76, 76), c(172, 66, 72), c(205, 62, 80), c(18, 86, 86)];
   }
 
-  function applyPalette(text) {
-    const list = text ? paletteFor(text.toLowerCase()) : null;
+  let paletteKey = null;
+  let paletteTimer = 0;
+  function applyPalette(key) {
+    if (key === paletteKey) return;
+    paletteKey = key;
+    const list = key ? paletteFor(key) : null;
     for (let i = 0; i < 5; i++) {
       if (list) stage.style.setProperty('--c' + (i + 1), list[i]);
       else stage.style.removeProperty('--c' + (i + 1));
     }
+  }
+  function schedulePalette(text) {
+    const key = text ? text.toLowerCase() : '';
+    clearTimeout(paletteTimer);
+    if (!key) { applyPalette(''); return; }
+    paletteTimer = setTimeout(() => applyPalette(key), 220);
   }
 
   setTimeout(() => hero.classList.remove('is-intro'), reduceMotion.matches ? 0 : 2400);
@@ -218,14 +315,13 @@
     tiltFrame = 0;
     tilt.x += (tilt.tx - tilt.x) * 0.12;
     tilt.y += (tilt.ty - tilt.y) * 0.12;
-    stage.style.setProperty('--tx', tilt.x.toFixed(3));
-    stage.style.setProperty('--ty', tilt.y.toFixed(3));
     let busy = Math.abs(tilt.tx - tilt.x) > 0.01 || Math.abs(tilt.ty - tilt.y) > 0.01;
-    frees.forEach((f) => {
+    const rects = pointer ? frees.map((f) => f.el.getBoundingClientRect()) : null;
+    frees.forEach((f, i) => {
       f.tx = 0;
       f.ty = 0;
-      if (pointer) {
-        const r = f.el.getBoundingClientRect();
+      if (rects) {
+        const r = rects[i];
         const dx = r.left + r.width / 2 - f.ox - pointer.x;
         const dy = r.top + r.height / 2 - f.oy - pointer.y;
         const d = Math.hypot(dx, dy) || 1;
@@ -238,6 +334,10 @@
       f.ox += (f.tx - f.ox) * 0.16;
       f.oy += (f.ty - f.oy) * 0.16;
       if (Math.abs(f.tx - f.ox) > 0.1 || Math.abs(f.ty - f.oy) > 0.1) busy = true;
+    });
+    stage.style.setProperty('--tx', tilt.x.toFixed(3));
+    stage.style.setProperty('--ty', tilt.y.toFixed(3));
+    frees.forEach((f) => {
       f.el.style.setProperty('--fx', f.ox.toFixed(1) + 'px');
       f.el.style.setProperty('--fy', f.oy.toFixed(1) + 'px');
     });
@@ -261,21 +361,32 @@
   });
 
   $$('[data-magnet]').forEach((btn) => {
+    let ox = 0;
+    let oy = 0;
     btn.addEventListener('pointermove', (event) => {
       if (!finePointer.matches || reduceMotion.matches) return;
       const r = btn.getBoundingClientRect();
-      const mx = (event.clientX - r.left - r.width / 2) * 0.18;
-      const my = (event.clientY - r.top - r.height / 2) * 0.3;
-      btn.style.translate = mx.toFixed(1) + 'px ' + my.toFixed(1) + 'px';
+      const cx = r.left - ox + r.width / 2;
+      const cy = r.top - oy + r.height / 2;
+      ox = (event.clientX - cx) * 0.18;
+      oy = (event.clientY - cy) * 0.3;
+      btn.style.translate = ox.toFixed(1) + 'px ' + oy.toFixed(1) + 'px';
     });
-    btn.addEventListener('pointerleave', () => { btn.style.translate = ''; });
+    btn.addEventListener('pointerleave', () => { ox = 0; oy = 0; btn.style.translate = ''; });
   });
 
   /* ---------- Écran 2 : le rouleau piloté par le défilement ---------- */
 
   const s2 = $('#avant-apres');
   const pin = $('.s2-pin', s2);
-  const screen = $('.screen', s2);
+  const frameEl = $('.frame', s2);
+  const fresh = $('.fresh', s2);
+  const wet = $('.wet', s2);
+  const roller = $('.roller-wrap', s2);
+  const dripA = $('.drip-a', s2);
+  const dripB = $('.drip-b', s2);
+  const progressBar = $('.mini-progress span', s2);
+  const stepsLine = $('.steps-line span', s2);
   const splatBox = $('.splats', s2);
   const steps = $$('.step', s2);
   const pinnedQuery = window.matchMedia('(min-width: 1080px) and (min-height: 640px)');
@@ -329,8 +440,8 @@
     if (k === 0 && g <= 0.001) return EMPTY;
     const x1 = k === 0 ? -2 : k * BW;
     const x2 = k === BANDS - 1 ? 104 : (k + 1) * BW;
-    const done = g >= 0.999;
-    const lead = done ? (down ? 104 : -4) : (down ? g * 100 : 100 - g * 100);
+    const finished = g >= 0.999;
+    const lead = finished ? (down ? 104 : -4) : (down ? g * 100 : 100 - g * 100);
     const pts = [[0, 0]];
     if (g <= 0.001) {
       verticalEdge(pts, x1, 0, 100, k);
@@ -360,25 +471,30 @@
       el.style.width = size + 'cqw';
       el.style.height = (size * 0.85) + 'cqw';
       splatBox.appendChild(el);
-      splats.push({ el, band: b, at: down ? y / 100 : 1 - y / 100 });
+      splats.push({ el, band: b, at: down ? y / 100 : 1 - y / 100, on: false });
     }
   }
 
   let target = 0;
   let current = 0;
   let tween = null;
+  let hold = null;
   let frame = 0;
-  let lastScrollP = 0;
+  let lastShape = '';
+  const flags = { painted: null, finished: null, steps: [null, null, null] };
 
   function measure() {
-    const r = s2.getBoundingClientRect();
     const vh = window.innerHeight || 800;
     let p;
     if (pinnedQuery.matches) {
+      const r = s2.getBoundingClientRect();
       const dist = Math.max(1, r.height - pin.offsetHeight);
       p = (-r.top + 60) / dist;
     } else {
-      p = (vh * 0.75 - r.top) / Math.max(1, r.height * 0.8);
+      const fr = frameEl.getBoundingClientRect();
+      const start = vh * 0.92;
+      const end = vh * 0.5 - fr.height * 0.5;
+      p = (start - fr.top) / Math.max(1, start - end);
     }
     return clamp(p);
   }
@@ -396,28 +512,49 @@
       else shift = (sb - STROKE) / (1 - STROKE);
     }
     const lead = down ? g * 100 : 100 - g * 100;
+    const leadCqw = lead / 100 * SCREEN_H;
     const glide = shift < 0.5 ? 2 * shift * shift : 1 - Math.pow(-2 * shift + 2, 2) / 2;
     const grow = Math.min(1, g * 2.5);
-    const css = s2.style;
 
-    screen.style.setProperty('--poly', paintShape(k, g, down));
-    css.setProperty('--p', p.toFixed(4));
-    css.setProperty('--x1', (Math.min(k, BANDS - 1) * BW).toFixed(3));
-    css.setProperty('--lead', (lead / 100 * SCREEN_H).toFixed(3) + 'cqw');
-    css.setProperty('--rx', (k * BW + BW / 2 + glide * BW).toFixed(3) + '%');
-    css.setProperty('--ry', lead.toFixed(3) + '%');
-    css.setProperty('--roll', ((lead * 2.6) % 8).toFixed(2) + 'px');
-    css.setProperty('--rtilt', (Math.sin(g * Math.PI * 2) * 1.4 + (down ? 1.2 : -1.2) * (1 - shift)).toFixed(2) + 'deg');
-    css.setProperty('--dop', down && k < BANDS && g > 0.06 && shift === 0 ? '1' : '0');
-    css.setProperty('--dx1', (k * BW + BW * 0.3).toFixed(2) + '%');
-    css.setProperty('--dx2', (k * BW + BW * 0.72).toFixed(2) + '%');
-    css.setProperty('--dy', lead.toFixed(2) + '%');
-    css.setProperty('--dl1', (1.4 + 3.2 * grow).toFixed(2) + 'cqw');
-    css.setProperty('--dl2', (1 + 2 * grow).toFixed(2) + 'cqw');
-    splats.forEach((sp) => sp.el.classList.toggle('on', k > sp.band || (k === sp.band && g > sp.at)));
-    s2.classList.toggle('is-painted', p >= 0.985);
-    s2.classList.toggle('is-finished', p >= 0.995);
-    steps.forEach((step, i) => step.classList.toggle('is-on', p > thresholds[i]));
+    const shape = paintShape(k, g, down);
+    if (shape !== lastShape) {
+      fresh.style.clipPath = shape;
+      wet.style.clipPath = shape;
+      lastShape = shape;
+    }
+    wet.style.setProperty('--x1', (Math.min(k, BANDS - 1) * BW).toFixed(3));
+    wet.style.setProperty('--lead', leadCqw.toFixed(3) + 'cqw');
+
+    const rx = k * BW + BW / 2 + glide * BW;
+    roller.style.translate = 'calc(' + rx.toFixed(3) + 'cqw - 50%) calc(' + leadCqw.toFixed(3) + 'cqw - 12.94%)';
+    roller.style.rotate = (Math.sin(g * Math.PI * 2) * 1.4 + (down ? 1.2 : -1.2) * (1 - shift)).toFixed(2) + 'deg';
+    roller.style.setProperty('--roll', ((lead * 2.6) % 8).toFixed(2) + 'px');
+
+    const dripOn = down && k < BANDS && g > 0.06 && shift === 0;
+    dripA.style.opacity = dripOn ? '1' : '0';
+    dripB.style.opacity = dripOn ? '1' : '0';
+    if (dripOn) {
+      dripA.style.translate = 'calc(' + (k * BW + BW * 0.3).toFixed(2) + 'cqw - 50%) ' + (leadCqw - 0.2).toFixed(2) + 'cqw';
+      dripB.style.translate = 'calc(' + (k * BW + BW * 0.72).toFixed(2) + 'cqw - 50%) ' + (leadCqw - 0.2).toFixed(2) + 'cqw';
+      dripA.style.height = (1.4 + 3.2 * grow).toFixed(2) + 'cqw';
+      dripB.style.height = (1 + 2 * grow).toFixed(2) + 'cqw';
+    }
+
+    progressBar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    stepsLine.style.transform = 'scaleY(' + p.toFixed(4) + ')';
+
+    splats.forEach((sp) => {
+      const on = k > sp.band || (k === sp.band && g > sp.at);
+      if (on !== sp.on) { sp.on = on; sp.el.classList.toggle('on', on); }
+    });
+    const painted = p >= 0.985;
+    const finished = p >= 0.995;
+    if (painted !== flags.painted) { flags.painted = painted; s2.classList.toggle('is-painted', painted); }
+    if (finished !== flags.finished) { flags.finished = finished; s2.classList.toggle('is-finished', finished); }
+    steps.forEach((step, i) => {
+      const on = p > thresholds[i];
+      if (on !== flags.steps[i]) { flags.steps[i] = on; step.classList.toggle('is-on', on); }
+    });
   }
 
   const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
@@ -427,7 +564,7 @@
     if (tween) {
       const k = Math.min(1, (now - tween.t0) / tween.ms);
       current = tween.from + (tween.to - tween.from) * easeInOut(k);
-      if (k >= 1) { tween = null; target = current; }
+      if (k >= 1) { tween = null; target = current; hold = measure(); }
     } else {
       const diff = target - current;
       current = (reduceMotion.matches || Math.abs(diff) < 0.0006) ? target : current + diff * 0.14;
@@ -440,21 +577,51 @@
 
   function onScroll() {
     const p = measure();
-    if (tween && Math.abs(p - lastScrollP) > 0.002) tween = null;
-    lastScrollP = p;
-    if (!tween) { target = p; kick(); }
+    if (tween) {
+      if (Math.abs(p - tween.startP) <= 0.02) return;
+      tween = null;
+    }
+    if (hold !== null) {
+      if (Math.abs(p - hold) < 0.04) return;
+      hold = null;
+    }
+    if (Math.abs(p - target) < 0.0002 && Math.abs(current - target) < 0.0006) return;
+    target = p;
+    kick();
   }
 
   $('#replay').addEventListener('click', () => {
-    tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200 };
-    lastScrollP = measure();
+    hold = null;
+    tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200, startP: measure() };
     kick();
   });
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
-  current = target = lastScrollP = measure();
+  current = target = measure();
   apply(current);
+
+  /* ---------- Animations : pause hors écran et bouton pause ---------- */
+
+  if ('IntersectionObserver' in window) {
+    const watcher = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => entry.target.classList.toggle('is-off', !entry.isIntersecting));
+    }, { rootMargin: '80px 0px' });
+    watcher.observe(hero);
+    watcher.observe(s2);
+  }
+
+  const motionBtn = $('#motion-toggle');
+  const motionLabel = $('#motion-label');
+  function setPaused(on, save) {
+    document.documentElement.classList.toggle('is-paused', on);
+    motionLabel.textContent = on ? 'Relancer' : 'Pause';
+    if (save) { try { localStorage.setItem('lpb-paused', on ? '1' : '0'); } catch (e) { /* stockage indisponible */ } }
+  }
+  motionBtn.addEventListener('click', () => setPaused(!document.documentElement.classList.contains('is-paused'), true));
+  let storedPause = false;
+  try { storedPause = localStorage.getItem('lpb-paused') === '1'; } catch (e) { storedPause = false; }
+  if (storedPause) setTimeout(() => setPaused(true, false), 2600);
 
   /* ---------- Panneaux Avis et FAQ ---------- */
 
@@ -463,7 +630,12 @@
     if (dialog && !dialog.open) dialog.showModal();
   }));
   $$('dialog.panel').forEach((dialog) => {
-    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    let downOnBackdrop = false;
+    dialog.addEventListener('pointerdown', (event) => { downOnBackdrop = event.target === dialog; });
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog && downOnBackdrop) dialog.close();
+      downOnBackdrop = false;
+    });
     $$('[data-close]', dialog).forEach((btn) => btn.addEventListener('click', () => dialog.close()));
   });
 
