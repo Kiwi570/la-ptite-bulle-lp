@@ -72,6 +72,7 @@
     const isStep2 = state.step === 2;
 
     hero.style.setProperty('--lit', String(isDone ? 4.6 : lit));
+    applyPalette(asleep ? '' : shownName());
     tags.forEach((tag, i) => tag.classList.toggle('is-on', lit > i));
     miniBlocks.forEach((el) => el.classList.toggle('is-on', lit >= Number(el.dataset.mini)));
     sleep.hidden = !asleep;
@@ -185,6 +186,90 @@
     if (state.step === 3) { Object.assign(state, { step: 1, site: '', email: '' }); render(); }
     focusField(dialog ? 80 : 40);
   }));
+
+  /* ---------- La bulle : ouverture, palette et réactions à la souris ---------- */
+
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  function paletteFor(text) {
+    let h = 2166136261;
+    for (const ch of text) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
+    const hue = (h >>> 0) % 360;
+    const c = (dh, s, l) => 'hsl(' + ((hue + dh) % 360) + ' ' + s + '% ' + l + '%)';
+    return [c(0, 82, 72), c(38, 76, 76), c(172, 66, 72), c(205, 62, 80), c(18, 86, 86)];
+  }
+
+  function applyPalette(text) {
+    const list = text ? paletteFor(text.toLowerCase()) : null;
+    for (let i = 0; i < 5; i++) {
+      if (list) stage.style.setProperty('--c' + (i + 1), list[i]);
+      else stage.style.removeProperty('--c' + (i + 1));
+    }
+  }
+
+  setTimeout(() => hero.classList.remove('is-intro'), reduceMotion.matches ? 0 : 2400);
+
+  const frees = $$('.free', stage).map((el) => ({ el, ox: 0, oy: 0, tx: 0, ty: 0 }));
+  const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
+  let pointer = null;
+  let tiltFrame = 0;
+
+  function tiltLoop() {
+    tiltFrame = 0;
+    tilt.x += (tilt.tx - tilt.x) * 0.12;
+    tilt.y += (tilt.ty - tilt.y) * 0.12;
+    stage.style.setProperty('--tx', tilt.x.toFixed(3));
+    stage.style.setProperty('--ty', tilt.y.toFixed(3));
+    let busy = Math.abs(tilt.tx - tilt.x) > 0.01 || Math.abs(tilt.ty - tilt.y) > 0.01;
+    frees.forEach((f) => {
+      f.tx = 0;
+      f.ty = 0;
+      if (pointer) {
+        const r = f.el.getBoundingClientRect();
+        const dx = r.left + r.width / 2 - f.ox - pointer.x;
+        const dy = r.top + r.height / 2 - f.oy - pointer.y;
+        const d = Math.hypot(dx, dy) || 1;
+        if (d < 150) {
+          const k = (1 - d / 150) * 48;
+          f.tx = dx / d * k;
+          f.ty = dy / d * k;
+        }
+      }
+      f.ox += (f.tx - f.ox) * 0.16;
+      f.oy += (f.ty - f.oy) * 0.16;
+      if (Math.abs(f.tx - f.ox) > 0.1 || Math.abs(f.ty - f.oy) > 0.1) busy = true;
+      f.el.style.setProperty('--fx', f.ox.toFixed(1) + 'px');
+      f.el.style.setProperty('--fy', f.oy.toFixed(1) + 'px');
+    });
+    if (busy) tiltFrame = requestAnimationFrame(tiltLoop);
+  }
+  const kickTilt = () => { if (!tiltFrame) tiltFrame = requestAnimationFrame(tiltLoop); };
+
+  hero.addEventListener('pointermove', (event) => {
+    if (!finePointer.matches || reduceMotion.matches) return;
+    const r = stage.getBoundingClientRect();
+    tilt.tx = Math.max(-1, Math.min(1, (event.clientX - (r.left + r.width / 2)) / r.width)) * 10;
+    tilt.ty = Math.max(-1, Math.min(1, (event.clientY - (r.top + r.height / 2)) / r.height)) * 10;
+    pointer = { x: event.clientX, y: event.clientY };
+    kickTilt();
+  });
+  hero.addEventListener('pointerleave', () => {
+    tilt.tx = 0;
+    tilt.ty = 0;
+    pointer = null;
+    kickTilt();
+  });
+
+  $$('[data-magnet]').forEach((btn) => {
+    btn.addEventListener('pointermove', (event) => {
+      if (!finePointer.matches || reduceMotion.matches) return;
+      const r = btn.getBoundingClientRect();
+      const mx = (event.clientX - r.left - r.width / 2) * 0.18;
+      const my = (event.clientY - r.top - r.height / 2) * 0.3;
+      btn.style.translate = mx.toFixed(1) + 'px ' + my.toFixed(1) + 'px';
+    });
+    btn.addEventListener('pointerleave', () => { btn.style.translate = ''; });
+  });
 
   /* ---------- Écran 2 : le rouleau piloté par le défilement ---------- */
 

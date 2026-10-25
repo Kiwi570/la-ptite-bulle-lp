@@ -25,7 +25,7 @@
 <a class="skip" href="#lp-field">Aller au formulaire</a>
 
 <main>
-<section id="concept" class="hero" aria-labelledby="lp-title">
+<section id="concept" class="hero is-intro" aria-labelledby="lp-title">
 
 <div class="hero-bg" aria-hidden="true">
 <div class="glow glow-pink"></div>
@@ -51,12 +51,12 @@
 <button type="button" data-open="panel-avis">Avis</button>
 <button type="button" data-open="panel-faq">FAQ</button>
 </nav>
-<button type="button" class="btn btn-pink btn-sm" data-goto-field>Créer ma bulle</button>
+<button type="button" class="btn btn-pink btn-sm" data-goto-field data-magnet>Créer ma bulle</button>
 </header>
 
 <div class="hero-main wrap">
 <div class="hero-copy">
-<h1 id="lp-title" class="hero-title">Voyez votre<br>futur site<br><span class="pink">avant de le<br><span class="swoosh">commander.<svg aria-hidden="true" viewBox="0 0 400 26"><path d="M6 18 C 80 8, 160 24, 230 15 S 340 6, 394 14"/></svg></span></span></h1>
+<h1 id="lp-title" class="hero-title"><span class="w" style="--i:0">Voyez</span> <span class="w" style="--i:1">votre</span><br><span class="w iris" style="--i:2">futur site</span><br><span class="pink"><span class="w" style="--i:3">avant</span> <span class="w" style="--i:4">de</span> <span class="w" style="--i:5">le</span><br><span class="w swoosh" style="--i:6">commander.<svg aria-hidden="true" viewBox="0 0 400 26"><path d="M6 18 C 80 8, 160 24, 230 15 S 340 6, 394 14"/></svg></span></span></h1>
 
 <p class="lead">Votre site actuel, ou quelques mots sur votre activité, et vous explorez une maquette interactive faite pour vous. <strong>Gratuitement.</strong></p>
 
@@ -72,7 +72,7 @@
 <svg id="icon-site" class="field-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg>
 <svg id="icon-mail" class="field-icon" aria-hidden="true" viewBox="0 0 24 24" hidden><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
 <input id="lp-field" name="site" type="text" placeholder="www.votre-site.fr" autocomplete="url" inputmode="url" spellcheck="false" aria-describedby="lp-step">
-<button type="submit" class="btn btn-pink btn-field"><span id="lp-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+<button type="submit" class="btn btn-pink btn-field" data-magnet><span id="lp-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </form>
 <span class="badge-24">sous 24 h</span>
 </div>
@@ -108,6 +108,14 @@
 <span class="free" aria-hidden="true" style="--x:97%;--y:6%;--s:7px;--d:9s;--dl:-5s"></span>
 <span class="free" aria-hidden="true" style="--x:50%;--y:-5%;--s:5px;--d:7.5s;--dl:-2s"></span>
 <span class="free" aria-hidden="true" style="--x:30%;--y:104%;--s:9px;--d:8.5s;--dl:-4s"></span>
+<span class="free" aria-hidden="true" style="--x:-8%;--y:62%;--s:12px;--d:8s;--dl:-2s"></span>
+<span class="free" aria-hidden="true" style="--x:108%;--y:20%;--s:9px;--d:7s;--dl:-4s"></span>
+<span class="free" aria-hidden="true" style="--x:112%;--y:74%;--s:14px;--d:9s;--dl:-1s"></span>
+<span class="free" aria-hidden="true" style="--x:18%;--y:-8%;--s:10px;--d:7.5s;--dl:-3s"></span>
+<span class="free" aria-hidden="true" style="--x:82%;--y:108%;--s:11px;--d:8.5s;--dl:-5s"></span>
+<span class="free" aria-hidden="true" style="--x:-12%;--y:8%;--s:6px;--d:6.5s;--dl:-2.5s"></span>
+<span class="free" aria-hidden="true" style="--x:60%;--y:112%;--s:7px;--d:7s;--dl:-6s"></span>
+<span class="free" aria-hidden="true" style="--x:40%;--y:-12%;--s:13px;--d:9.5s;--dl:-3.5s"></span>
 
 <div class="bubble" aria-hidden="true">
 <div class="film"></div>
@@ -117,6 +125,7 @@
 <div class="rim"></div>
 <div class="shine"></div>
 <div class="shine-2"></div>
+<div class="glare"></div>
 <span class="micro" style="--x:12.4%;--y:36.3%;--s:14px;--d:7s;--dl:-1s"></span>
 <span class="micro" style="--x:27%;--y:17.2%;--s:22px;--d:8s;--dl:-3s"></span>
 <span class="micro" style="--x:43.4%;--y:12.6%;--s:9px;--d:6s;--dl:-2s"></span>
@@ -148,10 +157,10 @@
 
 <button type="button" id="bubble-bounce" class="bounce" aria-label="Faire rebondir la bulle"></button>
 
-<div class="tag-pos" aria-hidden="true" style="--x:8%;--y:12%"><span class="tag" style="--c:239,122,164;--r:-5deg;--d:6.5s;--dl:-1s">Votre activité</span></div>
-<div class="tag-pos" aria-hidden="true" style="--x:95%;--y:22%"><span class="tag" style="--c:195,177,247;--r:4deg;--d:7s;--dl:-3s">Votre identité</span></div>
-<div class="tag-pos" aria-hidden="true" style="--x:5%;--y:80%"><span class="tag" style="--c:127,212,234;--r:3deg;--d:6s;--dl:-2s">Vos contenus</span></div>
-<div class="tag-pos" aria-hidden="true" style="--x:90%;--y:93%"><span class="tag" style="--c:243,207,122;--r:-4deg;--d:7.5s;--dl:-4s">Vos objectifs</span></div>
+<div class="tag-pos" aria-hidden="true" style="--x:8%;--y:12%;--i:0"><span class="tag" style="--c:239,122,164;--r:-5deg;--d:6.5s;--dl:-1s">Votre activité</span></div>
+<div class="tag-pos" aria-hidden="true" style="--x:95%;--y:22%;--i:1"><span class="tag" style="--c:195,177,247;--r:4deg;--d:7s;--dl:-3s">Votre identité</span></div>
+<div class="tag-pos" aria-hidden="true" style="--x:5%;--y:80%;--i:2"><span class="tag" style="--c:127,212,234;--r:3deg;--d:6s;--dl:-2s">Vos contenus</span></div>
+<div class="tag-pos" aria-hidden="true" style="--x:90%;--y:93%;--i:3"><span class="tag" style="--c:243,207,122;--r:-4deg;--d:7.5s;--dl:-4s">Vos objectifs</span></div>
 </div>
 <p class="note" aria-live="polite"><span id="lp-note-text">tapez votre adresse, elle s’éveille</span><svg aria-hidden="true" viewBox="0 0 44 44"><path d="M4 40 C 14 30, 22 20, 36 8"/><path d="M24 7 L37 7 L35 20"/></svg></p>
 </div>
@@ -276,7 +285,7 @@
 <li class="step"><span class="step-num">03</span><span class="step-text"><span class="step-title">Vous explorez la maquette</span><span class="step-sub">Navigable, sous 24 h, sans engagement.</span></span></li>
 </ol>
 <div class="s2-actions">
-<button type="button" class="btn btn-pink btn-lg" data-goto-field>Créer ma bulle<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+<button type="button" class="btn btn-pink btn-lg" data-goto-field data-magnet>Créer ma bulle<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 <button type="button" id="replay" class="btn btn-ghost btn-lg replay"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg>Rejouer</button>
 </div>
 </div>
