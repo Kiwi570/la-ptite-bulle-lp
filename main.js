@@ -190,9 +190,94 @@
 
   const s2 = $('#avant-apres');
   const pin = $('.s2-pin', s2);
+  const screen = $('.screen', s2);
+  const splatBox = $('.splats', s2);
   const steps = $$('.step', s2);
   const pinnedQuery = window.matchMedia('(min-width: 1080px) and (min-height: 640px)');
   const thresholds = [0.02, 0.45, 0.9];
+
+  const BANDS = 6;
+  const BW = 100 / BANDS;
+  const STROKE = 0.84;
+  const SCREEN_H = 66.667 - 6.4;
+  const EMPTY = 'polygon(0% 0%,0% 0%,0% 0%)';
+  const FULL = 'polygon(0% 0%,100% 0%,100% 100%,0% 100%)';
+
+  const noise = (i, seed) => {
+    const x = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453;
+    return x - Math.floor(x) - 0.5;
+  };
+  const jitter = (t, seed, step, amp) => {
+    const a = Math.floor(t / step);
+    const f = t / step - a;
+    return amp * (noise(a, seed) * (1 - f) + noise(a + 1, seed) * f);
+  };
+  const keep = (v) => Math.max(0, Math.min(100, v));
+  const fmt = (v) => Math.round(v * 100) / 100;
+
+  function samples(from, to, step) {
+    const lo = Math.min(from, to);
+    const hi = Math.max(from, to);
+    const list = [];
+    for (let j = Math.ceil(lo / step); j <= Math.floor(hi / step); j++) {
+      const v = j * step;
+      if (v > lo && v < hi) list.push(v);
+    }
+    if (to < from) list.reverse();
+    return [from, ...list, to];
+  }
+
+  function verticalEdge(pts, x, y0, y1, seed) {
+    samples(y0, y1, 3.2).forEach((y) => pts.push([keep(x + jitter(y, seed, 3.2, 0.6)), y]));
+  }
+
+  function leadingEdge(pts, y, x0, x1, seed) {
+    const step = BW / 9;
+    samples(x0, x1, step).forEach((x) => {
+      const bristle = noise(Math.round(x * 7), seed + 9) > 0.32 ? 1.1 : 0;
+      pts.push([x, keep(y + jitter(x, seed, step, 2) + (y < 50 ? bristle : -bristle))]);
+    });
+  }
+
+  function paintShape(k, g, down) {
+    if (k >= BANDS) return FULL;
+    if (k === 0 && g <= 0.001) return EMPTY;
+    const x1 = k === 0 ? -2 : k * BW;
+    const x2 = k === BANDS - 1 ? 104 : (k + 1) * BW;
+    const done = g >= 0.999;
+    const lead = done ? (down ? 104 : -4) : (down ? g * 100 : 100 - g * 100);
+    const pts = [[0, 0]];
+    if (g <= 0.001) {
+      verticalEdge(pts, x1, 0, 100, k);
+    } else if (down) {
+      verticalEdge(pts, x2, 0, lead, k + 1);
+      leadingEdge(pts, lead, x2, x1, 50 + k);
+      verticalEdge(pts, x1, lead, 100, k);
+    } else {
+      verticalEdge(pts, x1, 0, lead, k);
+      leadingEdge(pts, lead, x1, x2, 50 + k);
+      verticalEdge(pts, x2, lead, 100, k + 1);
+    }
+    pts.push([0, 100]);
+    return 'polygon(' + pts.map(([x, y]) => fmt(x) + '% ' + fmt(y) + '%').join(',') + ')';
+  }
+
+  const splats = [];
+  for (let b = 0; b < BANDS - 1; b++) {
+    for (let i = 0; i < 3; i++) {
+      const y = 10 + (noise(i, b + 20) + 0.5) * 80;
+      const down = b % 2 === 0;
+      const el = document.createElement('span');
+      el.className = 'splat';
+      const size = 0.45 + (noise(i, b + 40) + 0.5) * 0.75;
+      el.style.left = ((b + 1) * BW + 0.8 + (noise(i, b + 30) + 0.5) * 3) + '%';
+      el.style.top = y + '%';
+      el.style.width = size + 'cqw';
+      el.style.height = (size * 0.85) + 'cqw';
+      splatBox.appendChild(el);
+      splats.push({ el, band: b, at: down ? y / 100 : 1 - y / 100 });
+    }
+  }
 
   let target = 0;
   let current = 0;
@@ -214,9 +299,37 @@
   }
 
   function apply(p) {
-    s2.style.setProperty('--p', p.toFixed(4));
-    s2.style.setProperty('--rtop', (6 + 24 * (0.5 - 0.5 * Math.cos(p * Math.PI * 4))).toFixed(2) + '%');
-    s2.style.setProperty('--rtilt', (Math.sin(p * Math.PI * 4) * 5).toFixed(2) + 'deg');
+    const s = p * BANDS;
+    let k = Math.floor(s);
+    let sb = s - k;
+    if (k >= BANDS) { k = BANDS; sb = 0; }
+    const down = k % 2 === 0;
+    let g = 1;
+    let shift = 0;
+    if (k < BANDS) {
+      if (sb < STROKE) g = sb / STROKE;
+      else shift = (sb - STROKE) / (1 - STROKE);
+    }
+    const lead = down ? g * 100 : 100 - g * 100;
+    const glide = shift < 0.5 ? 2 * shift * shift : 1 - Math.pow(-2 * shift + 2, 2) / 2;
+    const grow = Math.min(1, g * 2.5);
+    const css = s2.style;
+
+    screen.style.setProperty('--poly', paintShape(k, g, down));
+    css.setProperty('--p', p.toFixed(4));
+    css.setProperty('--x1', (Math.min(k, BANDS - 1) * BW).toFixed(3));
+    css.setProperty('--lead', (lead / 100 * SCREEN_H).toFixed(3) + 'cqw');
+    css.setProperty('--rx', (k * BW + BW / 2 + glide * BW).toFixed(3) + '%');
+    css.setProperty('--ry', lead.toFixed(3) + '%');
+    css.setProperty('--roll', ((lead * 2.6) % 8).toFixed(2) + 'px');
+    css.setProperty('--rtilt', (Math.sin(g * Math.PI * 2) * 1.4 + (down ? 1.2 : -1.2) * (1 - shift)).toFixed(2) + 'deg');
+    css.setProperty('--dop', down && k < BANDS && g > 0.06 && shift === 0 ? '1' : '0');
+    css.setProperty('--dx1', (k * BW + BW * 0.3).toFixed(2) + '%');
+    css.setProperty('--dx2', (k * BW + BW * 0.72).toFixed(2) + '%');
+    css.setProperty('--dy', lead.toFixed(2) + '%');
+    css.setProperty('--dl1', (1.4 + 3.2 * grow).toFixed(2) + 'cqw');
+    css.setProperty('--dl2', (1 + 2 * grow).toFixed(2) + 'cqw');
+    splats.forEach((sp) => sp.el.classList.toggle('on', k > sp.band || (k === sp.band && g > sp.at)));
     s2.classList.toggle('is-painted', p >= 0.985);
     s2.classList.toggle('is-finished', p >= 0.995);
     steps.forEach((step, i) => step.classList.toggle('is-on', p > thresholds[i]));
@@ -232,10 +345,10 @@
       if (k >= 1) { tween = null; target = current; }
     } else {
       const diff = target - current;
-      current = (reduceMotion.matches || Math.abs(diff) < 0.0008) ? target : current + diff * 0.16;
+      current = (reduceMotion.matches || Math.abs(diff) < 0.0006) ? target : current + diff * 0.14;
     }
     apply(current);
-    if (tween || Math.abs(target - current) > 0.0008) frame = requestAnimationFrame(loop);
+    if (tween || Math.abs(target - current) > 0.0006) frame = requestAnimationFrame(loop);
   }
 
   function kick() { if (!frame) frame = requestAnimationFrame(loop); }
@@ -248,7 +361,7 @@
   }
 
   $('#replay').addEventListener('click', () => {
-    tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 2600 };
+    tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200 };
     lastScrollP = measure();
     kick();
   });
