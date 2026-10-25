@@ -815,6 +815,39 @@ section[id],#lp-field,#fin-field{scroll-margin-top:calc(var(--bar-h) + 16px)}
 @media (max-height:500px){.hero-copy{gap:10px}.check-rating{display:none}}
 
 .checks{gap:10px 18px}
+
+/* v17 : vraie respiration (hiérarchie et tailles) */
+.hero-copy{max-width:600px}
+.hero-title{font-size:clamp(34px,min(4vw,6.6vh),76px)}
+.promise{font-size:clamp(22px,min(2vw,3.6vh),36px);margin:0}
+.lead{font-size:clamp(16px,min(1.15vw,2vh),18px);max-width:36em}
+.field-head.is-quiet{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.stage{width:clamp(240px,min(27vw,46vh),460px)}
+.hero-main{justify-content:space-between}
+@media (min-width:1080px) and (max-height:1000px){html:not(.offer-ended) .hero-title{font-size:clamp(34px,min(4vw,6.2vh),76px)}}
+@media (min-width:1900px){
+  .hero-copy{max-width:min(44vw,900px)}
+  .hero-title{font-size:clamp(40px,min(2.9vw,6vh),82px)}
+  .promise{font-size:clamp(24px,min(1.9vw,3.6vh),44px)}
+  .lead{font-size:20px}
+  .stage{width:clamp(240px,min(25vw,42vh),580px)}
+}
+@media (max-width:1079px){.hero-copy{max-width:none}}
+@media (max-width:560px){.hero-title{font-size:clamp(32px,9.6vw,40px)}.promise{font-size:clamp(19px,5.6vw,24px)}.lead{font-size:16px}}
+@media (max-width:380px) and (max-height:700px){.hero-title{font-size:30px}.promise{font-size:18px}}
+@media (max-height:500px){.hero-title{font-size:26px}.promise{font-size:17px}}
+
+
+/* v17b : des groupes nets, moins d'éléments à gauche */
+.promise{margin-top:calc(-1 * clamp(4px,1.3vh,14px))}
+.field-block{margin-top:clamp(2px,2.2vh,24px)}
+.checks li{font-size:14px;color:var(--muted-2)}
+.check-rating .rating{font-size:14px}
+.checks svg{width:15px;height:15px}
+@media (min-width:1080px){.motion-toggle{left:auto;right:max(16px,calc((100% - 1360px) / 2 + clamp(16px,3.4vw,48px)))}}
+@media (min-width:1900px){.motion-toggle{left:auto;right:max(16px,calc((100% - 1680px) / 2 + 48px))}}
+@media (max-height:620px){.promise{margin-top:0}.field-block{margin-top:0}}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}

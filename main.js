@@ -97,6 +97,7 @@
     const isDone = state.step === 3;
     const isStep2 = state.step === 2;
     const mine = state.active === v;
+    if (v === heroView) v.label.closest('.field-head').classList.toggle('is-quiet', state.step === 1);
     setHidden(v.wrap, isDone);
     setHidden(v.done, !isDone);
     if (v.card) {
