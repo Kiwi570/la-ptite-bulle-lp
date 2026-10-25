@@ -876,6 +876,27 @@ section[id],#lp-field,#fin-field{scroll-margin-top:calc(var(--bar-h) + 16px)}
   :root .hero .hero-main{padding-block:clamp(16px,3vh,40px)}
 }
 
+
+/* v20 : bandeau d'offre plus présent, plus d'air avant l'en-tête */
+@media (min-width:1180px) and (min-height:560px){
+  .offer-inner{min-height:58px;gap:12px 22px;padding-block:8px}
+  .offer-text{font-size:16px;gap:14px}
+  .offer-tag{font-size:12px;padding:6px 12px}
+  .offer-timer{gap:6px}
+  .ot{min-width:54px;padding:7px 10px;border-radius:10px}
+  .ot b{font-size:18px}
+  .ot i{font-size:12px}
+  .offer-cta{min-height:38px;padding:0 18px;font-size:14.5px}
+  .offer-cta svg{width:16px;height:16px}
+  .offer-ended-msg{font-size:15.5px}
+  :root .hero .topbar{padding-top:clamp(18px,3.2vh,36px)}
+}
+@media (min-width:1900px) and (min-height:560px){
+  .offer-inner{min-height:64px}
+  .offer-text{font-size:17px}
+  .ot b{font-size:19px}
+}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
