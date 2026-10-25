@@ -82,15 +82,15 @@
   }
 
   function noteText(len, lit) {
-    if (state.step === 3) return 'c’est parti' + NNB + '! votre bulle arrive';
+    if (state.step === 3) return 'c’est noté' + NNB + '! maquette en préparation';
     if (state.nudge && state.active === heroView) {
-      if (state.step === 2) return 'une adresse e-mail valide' + NNB + '!';
-      return state.noSite ? 'd’abord quelques mots' + NNB + '!' : 'd’abord votre adresse' + NNB + '!';
+      if (state.step === 2) return 'il manque une adresse e-mail valide';
+      return state.noSite ? 'd’abord quelques mots' + NNB + '!' : 'd’abord l’adresse de votre site';
     }
-    if (state.step === 2) return 'plus qu’une étape…';
-    if (lit >= 4) return 'la voilà réveillée' + NNB + '!';
-    if (len > 0) return 'elle s’éveille…';
-    return state.noSite ? 'décrivez votre activité, elle s’éveille' : 'tapez votre adresse, elle s’éveille';
+    if (state.step === 2) return 'plus qu’une étape' + NB + ': votre e-mail';
+    if (lit >= 4) return 'votre futur site se dessine' + NNB + '!';
+    if (len > 0) return 'votre maquette prend forme…';
+    return state.noSite ? 'décrivez votre activité ici' : 'indiquez l’adresse de votre site';
   }
 
   function renderView(v) {
@@ -120,13 +120,13 @@
     let defaultStep;
     const f = v.field;
     if (isStep2) {
-      setText(v.label, 'Où envoyer votre bulle' + NNB + '?');
+      setText(v.label, 'Où envoyer votre maquette' + NNB + '?');
       if (f.type !== 'email') f.type = 'email';
       f.name = 'email';
       f.autocomplete = 'email';
       f.inputMode = 'email';
       f.placeholder = 'vous@exemple.fr';
-      setText(v.ctaLabel, state.sending && mine ? 'Envoi…' : 'Recevoir ma bulle');
+      setText(v.ctaLabel, state.sending && mine ? 'Envoi…' : 'Recevoir ma maquette');
       defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
     } else {
       setText(v.label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
@@ -135,8 +135,8 @@
       f.autocomplete = state.noSite ? 'off' : 'url';
       f.inputMode = state.noSite ? 'text' : 'url';
       f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
-      setText(v.ctaLabel, 'Créer ma bulle');
-      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste' + NB + 'après.';
+      setText(v.ctaLabel, 'Découvrir mon futur site');
+      defaultStep = 'Étape 1 sur 2 · Votre e-mail juste' + NB + 'après.';
     }
     f.readOnly = state.sending;
     const err = mine ? state.error : '';
