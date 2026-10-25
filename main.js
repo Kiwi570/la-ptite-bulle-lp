@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  document.documentElement.classList.add('js');
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -30,7 +31,7 @@
     return {
       form,
       field: $('#' + p + '-field'),
-      trap: $('#' + p + '-website'),
+      trap: $('#' + p + '-hp'),
       label: $('#' + p + '-label'),
       ctaLabel: $('#' + p + '-cta-label'),
       stepText: $('#' + p + '-step'),
@@ -112,6 +113,7 @@
     setText(v.edit, state.noSite ? 'Modifier l’activité' : 'Modifier l’adresse');
     v.edit.disabled = state.sending;
     setHidden(v.privacy, !isStep2);
+    v.field.setAttribute('aria-describedby', isStep2 ? v.stepText.id + ' ' + v.privacy.id : v.stepText.id);
     v.iconSite.toggleAttribute('hidden', isStep2);
     v.iconMail.toggleAttribute('hidden', !isStep2);
 
@@ -182,8 +184,9 @@
     v.form.classList.remove('is-nudge');
     void v.form.offsetWidth;
     v.form.classList.add('is-nudge');
+    const hadFocus = document.activeElement === v.field;
     render();
-    announce(v, message);
+    if (hadFocus) announce(v, message);
     v.field.focus();
     nudgeTimer = setTimeout(() => {
       state.nudge = false;
@@ -262,7 +265,6 @@
         render();
         v.field.blur();
         try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); }
-        announce(v, 'Étape 2 sur 2' + NB + ': où envoyer votre bulle' + NNB + '? Indiquez votre adresse e-mail.');
       } else if (state.step === 2) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email.trim())) {
           fail(v, 'Cette adresse e-mail semble incomplète.');
@@ -281,8 +283,8 @@
         state.step = 3;
         render();
         bounce();
-        announce(v, 'C’est noté' + NNB + '! Votre bulle arrive au plus tard ' + state.eta + ', à l’adresse ' + state.email.trim() + '.');
-        v.restart.focus({ preventScroll: true });
+        const doneText = v.done.querySelector('.done-text');
+        try { doneText.focus({ preventScroll: true }); } catch (e) { doneText.focus(); }
       }
     });
 
@@ -311,7 +313,14 @@
     const dialog = btn.closest('dialog');
     if (dialog) dialog.close();
     if (state.step === 3) reset(heroView);
-    focusField(heroView, dialog ? 80 : 40);
+    const mid = window.innerHeight / 2;
+    const target = views.reduce((best, v) => {
+      const r = v.form.getBoundingClientRect();
+      const d = Math.abs(r.top + r.height / 2 - mid);
+      return d < best.d ? { v, d } : best;
+    }, { v: heroView, d: Infinity }).v;
+    state.active = target;
+    focusField(target, dialog ? 80 : 40);
   }));
 
   /* ---------- Heure de livraison : 24 h ouvrées, heure de Paris ---------- */
@@ -370,19 +379,19 @@
 
   function etaInfo() {
     const now = parisNow();
-    let dl = Math.ceil(businessDeadline(now, 24) / 300000) * 300000;
+    let dl = Math.ceil(businessDeadline(now, 24) / 3600000) * 3600000;
     let evening = false;
     let morning = false;
     if (dl % DAY === 0) { dl -= 60000; evening = true; }
     else if (new Date(dl).getUTCHours() < 8) { morning = true; }
     const d = new Date(dl);
     const diff = Math.round((Math.floor(dl / DAY) - Math.floor(now / DAY)));
-    const dayName = diff === 1 ? 'demain' : DAYS[d.getUTCDay()];
+    const dayName = diff === 0 ? 'aujourd’hui' : diff === 1 ? 'demain' : DAYS[d.getUTCDay()];
     const when = evening
-      ? dayName + ' soir'
+      ? (diff === 0 ? 'ce soir' : dayName + ' soir')
       : morning
       ? dayName + ' matin'
-      : dayName + ' avant ' + d.getUTCHours() + NB + 'h' + NB + String(d.getUTCMinutes()).padStart(2, '0');
+      : dayName + ' avant ' + d.getUTCHours() + NB + 'h';
     const n = d.getUTCDate();
     const full = DAYS[d.getUTCDay()] + ' ' + n + (n === 1 ? 'er' : '') + ' ' + MONTHS[d.getUTCMonth()];
     return { when, date: full.charAt(0).toUpperCase() + full.slice(1) };
@@ -646,6 +655,7 @@
       lastShape = shape;
     }
     wet.style.setProperty('--x1', (Math.min(k, BANDS - 1) * BW).toFixed(3));
+    wet.style.opacity = k >= BANDS ? '0' : (shift > 0 ? (1 - shift).toFixed(3) : '1');
     wet.style.setProperty('--lead', leadCqw.toFixed(3) + 'cqw');
 
     const rx = k * BW + BW / 2 + glide * BW;
@@ -727,15 +737,16 @@
   /* ---------- Section finale : bulle géante et bulles à éclater ---------- */
 
   const finalSection = $('#final');
+  const finalBg = $('.final-bg', finalSection);
   let finalTick = false;
   function updateFinal() {
     finalTick = false;
-    if (reduceMotion.matches) { finalSection.style.setProperty('--fp', '1'); return; }
+    if (reduceMotion.matches) { finalBg.style.setProperty('--fp', '1'); return; }
     const r = finalSection.getBoundingClientRect();
     const vh = window.innerHeight || 800;
     if (r.top > vh * 1.2 || r.bottom < -100) return;
     const fp = clamp((vh - r.top) / (vh * 0.85));
-    finalSection.style.setProperty('--fp', fp.toFixed(3));
+    finalBg.style.setProperty('--fp', fp.toFixed(3));
   }
   const kickFinal = () => { if (!finalTick) { finalTick = true; requestAnimationFrame(updateFinal); } };
   window.addEventListener('scroll', kickFinal, { passive: true });
