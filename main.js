@@ -136,7 +136,7 @@
       f.inputMode = state.noSite ? 'text' : 'url';
       f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
       setText(v.ctaLabel, 'Découvrir mon futur site');
-      defaultStep = 'Étape 1 sur 2 · Votre e-mail juste' + NB + 'après.';
+      defaultStep = '';
     }
     f.readOnly = state.sending;
     const err = mine ? state.error : '';
