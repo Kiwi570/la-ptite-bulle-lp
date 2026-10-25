@@ -212,6 +212,7 @@
       site: state.site.trim(),
       email: state.email.trim(),
       origine: v === heroView ? 'hero' : 'final',
+      offreJusqua: offerBar.dataset.end,
       page: window.location.href,
       date: new Date().toISOString()
     };
@@ -322,6 +323,46 @@
     state.active = target;
     focusField(target, dialog ? 80 : 40);
   }));
+
+  /* ---------- Offre limitée : compte à rebours réel ---------- */
+
+  const offerBar = $('#offer');
+  const offerEnd = Date.parse(offerBar.dataset.end);
+  const timeParts = { h: $$('[data-t="h"]'), m: $$('[data-t="m"]'), s: $$('[data-t="s"]') };
+  const secBubble = $('.cd-sec');
+  let offerTimer = 0;
+  const pad = (n) => String(n).padStart(2, '0');
+
+  function syncBarHeight() {
+    const sticky = !document.documentElement.classList.contains('offer-ended');
+    document.documentElement.style.setProperty('--bar-h', sticky ? offerBar.offsetHeight + 'px' : '0px');
+  }
+
+  function offerTick() {
+    const left = offerEnd - Date.now();
+    if (!(left > 0)) {
+      document.documentElement.classList.add('offer-ended');
+      document.documentElement.classList.remove('offer-last-hour');
+      clearInterval(offerTimer);
+      syncBarHeight();
+      return;
+    }
+    const total = Math.floor(left / 1000);
+    const values = { h: Math.floor(total / 3600), m: Math.floor((total % 3600) / 60), s: total % 60 };
+    Object.keys(values).forEach((key) => timeParts[key].forEach((el) => setText(el, pad(values[key]))));
+    document.documentElement.classList.toggle('offer-last-hour', left < 3600000);
+    if (secBubble && !reduceMotion.matches) {
+      secBubble.classList.remove('tick');
+      void secBubble.offsetWidth;
+      secBubble.classList.add('tick');
+    }
+  }
+
+  offerTick();
+  syncBarHeight();
+  if (!document.documentElement.classList.contains('offer-ended')) offerTimer = setInterval(offerTick, 1000);
+  window.addEventListener('resize', syncBarHeight);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) offerTick(); });
 
   /* ---------- Heure de livraison : 24 h ouvrées, heure de Paris ---------- */
 
@@ -621,7 +662,8 @@
     if (pinnedQuery.matches) {
       const r = s2.getBoundingClientRect();
       const dist = Math.max(1, r.height - pin.offsetHeight);
-      p = (-r.top + 60) / dist;
+      const barH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
+      p = (barH - r.top + 60) / dist;
     } else {
       const fr = frameEl.getBoundingClientRect();
       const start = vh * 0.92;

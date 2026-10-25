@@ -25,6 +25,15 @@
 </head>
 <body>
 <a class="skip" href="#lp-field">Aller au formulaire</a>
+<div id="offer" class="offer-bar" data-end="2026-10-25T23:00:00Z" role="region" aria-label="Offre limitée">
+<div class="offer-inner wrap">
+<p class="offer-text"><span class="offer-tag">Offre limitée</span><span class="offer-long">Votre maquette offerte <strong>jusqu’à ce soir minuit</strong></span><span class="offer-short">Offre <strong>jusqu’à minuit</strong></span></p>
+<p class="offer-timer" aria-hidden="true"><span class="ot"><b data-t="h">--</b><i>h</i></span><span class="ot"><b data-t="m">--</b><i>min</i></span><span class="ot ot-s"><b data-t="s">--</b><i>s</i></span></p>
+<span class="sr-only">Offre valable jusqu’au dimanche 25 octobre à minuit, heure de Paris.</span>
+<button type="button" class="offer-cta" data-goto-field>J’en profite<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+<p class="offer-ended-msg">Cette offre s’est terminée le dimanche 25 octobre à minuit.</p>
+</div>
+</div>
 
 <main>
 <section id="concept" class="hero is-intro" aria-labelledby="lp-title">
@@ -78,7 +87,7 @@
 <input id="lp-hp" class="trap" type="text" name="lp_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 <button type="submit" class="btn btn-pink btn-field" data-magnet><span id="lp-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </form>
-<span class="badge-24">en 2 étapes</span>
+<span class="badge-24">fin à minuit</span>
 </div>
 <div class="field-foot">
 <p id="lp-step">Étape 1 sur 2 · Vos coordonnées juste après.</p>
@@ -319,6 +328,12 @@
 <h2 id="final-title" class="final-title">Prêt à souffler<br><span class="final-iris">votre bulle ?</span></h2>
 <p class="final-lead">Une adresse, un e-mail, et votre futur site prend forme.</p>
 
+<div class="countdown" aria-hidden="true">
+<span class="cd-label">L’offre se termine dans</span>
+<div class="cd-row"><span class="cd-b"><b data-t="h">--</b><i>heures</i></span><span class="cd-sep">:</span><span class="cd-b"><b data-t="m">--</b><i>minutes</i></span><span class="cd-sep">:</span><span class="cd-b cd-sec"><b data-t="s">--</b><i>secondes</i></span></div>
+<span class="cd-end">Dimanche 25 octobre à minuit, heure de Paris</span>
+</div>
+<p class="sr-only">L’offre est valable jusqu’au dimanche 25 octobre à minuit, heure de Paris.</p>
 <div class="final-zone">
 <ul class="sr-only">
 <li>Gratuit</li><li>Sans engagement</li><li>Maquette navigable</li><li>Sur mesure</li><li>Sans carte bancaire</li>
@@ -425,6 +440,7 @@
 <button type="button" class="close" data-close aria-label="Fermer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 <div class="faq">
+<details><summary>Jusqu’à quand l’offre est-elle valable ?<span class="chev" aria-hidden="true"></span></summary><p>Jusqu’au dimanche 25 octobre à minuit, heure de Paris. Toutes les demandes reçues avant cette heure sont traitées sous 24 h ouvrées.</p></details>
 <details open><summary>La maquette est-elle vraiment gratuite ?<span class="chev" aria-hidden="true"></span></summary><p>Oui. L’aperçu de votre futur site est offert : aucun paiement, aucune carte bancaire. Vous ne payez que si vous décidez ensuite de lancer la création.</p></details>
 <details><summary>Que vais-je recevoir exactement ?<span class="chev" aria-hidden="true"></span></summary><p>Une première version personnalisée et navigable de votre site, imaginée pour votre activité. Vous la parcourez comme un vrai site, sur ordinateur comme sur mobile.</p></details>
 <details><summary>En combien de temps ?<span class="chev" aria-hidden="true"></span></summary><p>Sous 24 h ouvrées après votre demande, week-ends et jours fériés exclus : nous vous envoyons le lien de votre bulle par e-mail.</p></details>
