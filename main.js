@@ -12,26 +12,9 @@
   const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
   const setHidden = (el, hidden) => { if (el.hidden !== hidden) el.hidden = hidden; };
 
-  /* ---------- Écran 1 : la bulle et le formulaire ---------- */
+  /* ---------- Formulaires (hero et section finale, état partagé) ---------- */
 
   const hero = $('#concept');
-  const form = $('#bulle-form');
-  const field = $('#lp-field');
-  const trap = $('#lp-website');
-  const label = $('#lp-label');
-  const ctaLabel = $('#lp-cta-label');
-  const stepText = $('#lp-step');
-  const status = $('#lp-status');
-  const privacy = $('#lp-privacy');
-  const editBtn = $('#lp-edit');
-  const iconSite = $('#icon-site');
-  const iconMail = $('#icon-mail');
-  const formWrap = $('#lp-form-wrap');
-  const done = $('#lp-done');
-  const doneMail = $('#lp-done-mail');
-  const restartBtn = $('#lp-restart');
-  const toggleItem = $('#lp-toggle-item');
-  const toggleBtn = $('#lp-toggle');
   const note = $('#lp-note-text');
   const stage = $('#bubble-stage');
   const sleep = $('#bubble-sleep');
@@ -40,16 +23,44 @@
   const miniBadge = $('#mini-badge');
   const tags = $$('.tag');
   const miniBlocks = $$('[data-mini]');
-  const endpoint = (form.dataset.endpoint || '').trim();
 
-  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0 };
+  function makeView(p) {
+    const form = $('#' + p + '-form');
+    if (!form) return null;
+    return {
+      form,
+      field: $('#' + p + '-field'),
+      trap: $('#' + p + '-website'),
+      label: $('#' + p + '-label'),
+      ctaLabel: $('#' + p + '-cta-label'),
+      stepText: $('#' + p + '-step'),
+      status: $('#' + p + '-status'),
+      privacy: $('#' + p + '-privacy'),
+      edit: $('#' + p + '-edit'),
+      iconSite: $('#' + p + '-icon-site'),
+      iconMail: $('#' + p + '-icon-mail'),
+      wrap: $('#' + p + '-form-wrap'),
+      done: $('#' + p + '-done'),
+      doneMail: $('#' + p + '-done-mail'),
+      doneEta: $('#' + p + '-done .done-eta'),
+      restart: $('#' + p + '-restart'),
+      toggle: $('#' + p + '-toggle'),
+      toggleHide: $('#' + p + '-toggle-item') || $('#' + p + '-toggle'),
+      card: form.closest('.final-card'),
+      announceTimer: 0
+    };
+  }
+  const views = [makeView('lp'), makeView('fin')].filter(Boolean);
+  const heroView = views[0];
+  const endpoint = (heroView.form.dataset.endpoint || '').trim();
+
+  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView, eta: '' };
   let nudgeTimer = 0;
-  let announceTimer = 0;
 
-  function announce(message) {
-    clearTimeout(announceTimer);
-    status.textContent = '';
-    announceTimer = setTimeout(() => { status.textContent = message; }, 60);
+  function announce(view, message) {
+    clearTimeout(view.announceTimer);
+    view.status.textContent = '';
+    view.announceTimer = setTimeout(() => { view.status.textContent = message; }, 60);
   }
 
   const slugify = (text) => text.toLowerCase()
@@ -71,7 +82,7 @@
 
   function noteText(len, lit) {
     if (state.step === 3) return 'c’est parti' + NNB + '! votre bulle arrive';
-    if (state.nudge) {
+    if (state.nudge && state.active === heroView) {
       if (state.step === 2) return 'une adresse e-mail valide' + NNB + '!';
       return state.noSite ? 'd’abord quelques mots' + NNB + '!' : 'd’abord votre adresse' + NNB + '!';
     }
@@ -81,12 +92,68 @@
     return state.noSite ? 'décrivez votre activité, elle s’éveille' : 'tapez votre adresse, elle s’éveille';
   }
 
+  function renderView(v) {
+    const isDone = state.step === 3;
+    const isStep2 = state.step === 2;
+    const mine = state.active === v;
+    setHidden(v.wrap, isDone);
+    setHidden(v.done, !isDone);
+    if (v.card) {
+      setHidden(v.card.querySelector('.field-head'), isDone);
+      setHidden(v.card.querySelector('.eta'), isDone);
+    } else {
+      v.label.style.visibility = isDone ? 'hidden' : '';
+    }
+    setText(v.doneMail, state.email.trim() || 'votre adresse');
+    if (v.doneEta) setText(v.doneEta, state.eta || 'sous 24' + NB + 'h ouvrées');
+    setHidden(v.toggleHide, state.step !== 1);
+    setText(v.toggle, state.noSite ? 'J’ai déjà un site' : 'Pas encore de site' + NNB + '?');
+    setHidden(v.edit, !isStep2);
+    setText(v.edit, state.noSite ? 'Modifier l’activité' : 'Modifier l’adresse');
+    v.edit.disabled = state.sending;
+    setHidden(v.privacy, !isStep2);
+    v.iconSite.toggleAttribute('hidden', isStep2);
+    v.iconMail.toggleAttribute('hidden', !isStep2);
+
+    let defaultStep;
+    const f = v.field;
+    if (isStep2) {
+      setText(v.label, 'Où envoyer votre bulle' + NNB + '?');
+      if (f.type !== 'email') f.type = 'email';
+      f.name = 'email';
+      f.autocomplete = 'email';
+      f.inputMode = 'email';
+      f.placeholder = 'vous@exemple.fr';
+      setText(v.ctaLabel, state.sending && mine ? 'Envoi…' : 'Recevoir ma bulle');
+      defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
+    } else {
+      setText(v.label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
+      if (f.type !== 'text') f.type = 'text';
+      f.name = state.noSite ? 'activite' : 'site';
+      f.autocomplete = state.noSite ? 'off' : 'url';
+      f.inputMode = state.noSite ? 'text' : 'url';
+      f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
+      setText(v.ctaLabel, 'Créer ma bulle');
+      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste après.';
+    }
+    f.readOnly = state.sending;
+    const err = mine ? state.error : '';
+    setText(v.stepText, err || defaultStep);
+    v.stepText.classList.toggle('is-error', Boolean(err));
+    if (err) f.setAttribute('aria-invalid', 'true');
+    else f.removeAttribute('aria-invalid');
+    v.form.classList.toggle('is-sending', state.sending && mine);
+    if (!mine) v.form.classList.remove('is-nudge');
+
+    const wanted = isStep2 ? state.email : state.site;
+    if (f.value !== wanted) f.value = wanted;
+  }
+
   function render() {
     const len = state.site.trim().length;
     const lit = state.step > 1 ? 4 : (len === 0 ? 0 : Math.min(4, Math.ceil(len / 3)));
     const asleep = state.step === 1 && len === 0;
     const isDone = state.step === 3;
-    const isStep2 = state.step === 2;
 
     hero.style.setProperty('--lit', String(isDone ? 4.6 : lit));
     schedulePalette(asleep ? '' : shownName());
@@ -97,48 +164,7 @@
     setHidden(miniBadge, !isDone);
     setText(miniUrl, shownName() || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr'));
     setText(note, noteText(len, lit));
-
-    setHidden(formWrap, isDone);
-    setHidden(done, !isDone);
-    setText(doneMail, state.email.trim() || 'votre adresse');
-    setHidden(toggleItem, state.step !== 1);
-    setText(toggleBtn, state.noSite ? 'J’ai déjà un site' : 'Pas encore de site' + NNB + '?');
-    setHidden(editBtn, !isStep2);
-    setText(editBtn, state.noSite ? 'Modifier l’activité' : 'Modifier l’adresse');
-    editBtn.disabled = state.sending;
-    setHidden(privacy, !isStep2);
-    iconSite.toggleAttribute('hidden', isStep2);
-    iconMail.toggleAttribute('hidden', !isStep2);
-
-    let defaultStep;
-    if (isStep2) {
-      setText(label, 'Où envoyer votre bulle' + NNB + '?');
-      if (field.type !== 'email') field.type = 'email';
-      field.name = 'email';
-      field.autocomplete = 'email';
-      field.inputMode = 'email';
-      field.placeholder = 'vous@exemple.fr';
-      setText(ctaLabel, state.sending ? 'Envoi…' : 'Recevoir ma bulle');
-      defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
-    } else {
-      setText(label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
-      if (field.type !== 'text') field.type = 'text';
-      field.name = state.noSite ? 'activite' : 'site';
-      field.autocomplete = state.noSite ? 'off' : 'url';
-      field.inputMode = state.noSite ? 'text' : 'url';
-      field.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
-      setText(ctaLabel, 'Créer ma bulle');
-      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste après.';
-    }
-    field.readOnly = state.sending;
-    setText(stepText, state.error || defaultStep);
-    stepText.classList.toggle('is-error', Boolean(state.error));
-    if (state.error) field.setAttribute('aria-invalid', 'true');
-    else field.removeAttribute('aria-invalid');
-    form.classList.toggle('is-sending', state.sending);
-
-    const wanted = isStep2 ? state.email : state.site;
-    if (field.value !== wanted) field.value = wanted;
+    views.forEach(renderView);
   }
 
   function bounce() {
@@ -148,38 +174,41 @@
     stage.classList.add(state.boing % 2 ? 'boing-a' : 'boing-b');
   }
 
-  function fail(message) {
+  function fail(v, message) {
     clearTimeout(nudgeTimer);
+    state.active = v;
     state.nudge = true;
     state.error = message;
-    form.classList.remove('is-nudge');
-    void form.offsetWidth;
-    form.classList.add('is-nudge');
+    v.form.classList.remove('is-nudge');
+    void v.form.offsetWidth;
+    v.form.classList.add('is-nudge');
     render();
-    announce(message);
-    field.focus();
+    announce(v, message);
+    v.field.focus();
     nudgeTimer = setTimeout(() => {
       state.nudge = false;
-      form.classList.remove('is-nudge');
+      v.form.classList.remove('is-nudge');
       render();
     }, 1800);
   }
 
-  function focusField(delay = 40) {
+  function focusField(v, delay = 40) {
     setTimeout(() => {
-      if (field.offsetParent === null) return;
-      try { field.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' }); } catch (e) { field.scrollIntoView(); }
-      try { field.focus({ preventScroll: true }); } catch (e) { field.focus(); }
+      const f = v.field;
+      if (f.offsetParent === null) return;
+      try { f.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' }); } catch (e) { f.scrollIntoView(); }
+      try { f.focus({ preventScroll: true }); } catch (e) { f.focus(); }
     }, delay);
   }
 
-  async function sendRequest() {
-    if (trap && trap.value) return true;
+  async function sendRequest(v) {
+    if (v.trap && v.trap.value) return true;
     if (!endpoint) return true;
     const payload = {
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
       email: state.email.trim(),
+      origine: v === heroView ? 'hero' : 'final',
       page: window.location.href,
       date: new Date().toISOString()
     };
@@ -200,81 +229,175 @@
     }
   }
 
-  field.addEventListener('input', () => {
-    if (state.sending) return;
-    if (state.step === 2) state.email = field.value;
-    else state.site = field.value;
-    if (state.nudge || state.error) {
-      state.nudge = false;
-      state.error = '';
-      form.classList.remove('is-nudge');
-    }
+  function reset(v) {
+    Object.assign(state, { step: 1, site: '', email: '', nudge: false, error: '', active: v });
     render();
+  }
+
+  views.forEach((v) => {
+    v.field.addEventListener('input', () => {
+      if (state.sending) return;
+      state.active = v;
+      if (state.step === 2) state.email = v.field.value;
+      else state.site = v.field.value;
+      if (state.nudge || state.error) {
+        state.nudge = false;
+        state.error = '';
+        v.form.classList.remove('is-nudge');
+      }
+      render();
+    });
+
+    v.form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (state.sending) return;
+      state.active = v;
+      if (state.step === 1) {
+        if (!state.site.trim()) {
+          fail(v, state.noSite ? 'Décrivez d’abord votre activité en quelques mots.' : 'Indiquez d’abord l’adresse de votre site.');
+          return;
+        }
+        state.step = 2;
+        state.error = '';
+        render();
+        v.field.blur();
+        try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); }
+        announce(v, 'Étape 2 sur 2' + NB + ': où envoyer votre bulle' + NNB + '? Indiquez votre adresse e-mail.');
+      } else if (state.step === 2) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email.trim())) {
+          fail(v, 'Cette adresse e-mail semble incomplète.');
+          return;
+        }
+        state.sending = true;
+        state.error = '';
+        render();
+        const ok = await sendRequest(v);
+        state.sending = false;
+        if (!ok) {
+          fail(v, 'L’envoi n’a pas abouti. Réessayez dans un instant.');
+          return;
+        }
+        state.eta = etaInfo().when;
+        state.step = 3;
+        render();
+        bounce();
+        announce(v, 'C’est noté' + NNB + '! Votre bulle arrive au plus tard ' + state.eta + ', à l’adresse ' + state.email.trim() + '.');
+        v.restart.focus({ preventScroll: true });
+      }
+    });
+
+    v.edit.addEventListener('click', () => {
+      if (state.sending) return;
+      state.active = v;
+      state.step = 1;
+      state.error = '';
+      render();
+      focusField(v, 20);
+    });
+    v.restart.addEventListener('click', () => { reset(v); focusField(v, 20); });
+    v.toggle.addEventListener('click', () => {
+      state.active = v;
+      state.noSite = !state.noSite;
+      state.site = '';
+      state.error = '';
+      render();
+      focusField(v, 20);
+    });
   });
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (state.sending) return;
-    if (state.step === 1) {
-      if (!state.site.trim()) {
-        fail(state.noSite ? 'Décrivez d’abord votre activité en quelques mots.' : 'Indiquez d’abord l’adresse de votre site.');
-        return;
-      }
-      state.step = 2;
-      state.error = '';
-      render();
-      field.blur();
-      try { field.focus({ preventScroll: true }); } catch (e) { field.focus(); }
-      announce('Étape 2 sur 2' + NB + ': où envoyer votre bulle' + NNB + '? Indiquez votre adresse e-mail.');
-    } else if (state.step === 2) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email.trim())) {
-        fail('Cette adresse e-mail semble incomplète.');
-        return;
-      }
-      state.sending = true;
-      state.error = '';
-      render();
-      const ok = await sendRequest();
-      state.sending = false;
-      if (!ok) {
-        fail('L’envoi n’a pas abouti. Réessayez dans un instant.');
-        return;
-      }
-      state.step = 3;
-      render();
-      bounce();
-      announce('C’est noté' + NNB + '! Votre bulle arrive sous 24' + NB + 'h, à l’adresse ' + state.email.trim() + '.');
-      restartBtn.focus({ preventScroll: true });
-    }
-  });
-
-  editBtn.addEventListener('click', () => {
-    if (state.sending) return;
-    state.step = 1;
-    state.error = '';
-    render();
-    focusField(20);
-  });
-  restartBtn.addEventListener('click', () => {
-    Object.assign(state, { step: 1, site: '', email: '', nudge: false, error: '' });
-    render();
-    focusField(20);
-  });
-  toggleBtn.addEventListener('click', () => {
-    state.noSite = !state.noSite;
-    state.site = '';
-    state.error = '';
-    render();
-    focusField(20);
-  });
   $('#bubble-bounce').addEventListener('click', bounce);
 
   $$('[data-goto-field]').forEach((btn) => btn.addEventListener('click', () => {
     const dialog = btn.closest('dialog');
     if (dialog) dialog.close();
-    if (state.step === 3) { Object.assign(state, { step: 1, site: '', email: '', error: '' }); render(); }
-    focusField(dialog ? 80 : 40);
+    if (state.step === 3) reset(heroView);
+    focusField(heroView, dialog ? 80 : 40);
   }));
+
+  /* ---------- Heure de livraison : 24 h ouvrées, heure de Paris ---------- */
+
+  const DAY = 86400000;
+  const DAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  const holidayCache = {};
+
+  function easterUTC(y) {
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
+    const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return Date.UTC(y, month - 1, day);
+  }
+
+  function holidays(y) {
+    if (holidayCache[y]) return holidayCache[y];
+    const set = new Set([[0, 1], [4, 1], [4, 8], [6, 14], [7, 15], [10, 1], [10, 11], [11, 25]].map(([mo, d]) => Date.UTC(y, mo, d)));
+    const easter = easterUTC(y);
+    [1, 39, 50].forEach((n) => set.add(easter + n * DAY));
+    holidayCache[y] = set;
+    return set;
+  }
+
+  function parisNow() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+      }).formatToParts(new Date());
+      const get = (type) => Number(parts.find((x) => x.type === type).value);
+      return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
+    } catch (e) {
+      const d = new Date();
+      return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes());
+    }
+  }
+
+  function businessDeadline(start, hours) {
+    let t = start;
+    let left = hours * 3600000;
+    for (let guard = 0; guard < 40; guard++) {
+      const day = Math.floor(t / DAY) * DAY;
+      const date = new Date(day);
+      const wd = date.getUTCDay();
+      if (wd === 0 || wd === 6 || holidays(date.getUTCFullYear()).has(day)) { t = day + DAY; continue; }
+      const available = day + DAY - t;
+      if (left <= available) return t + left;
+      left -= available;
+      t = day + DAY;
+    }
+    return t;
+  }
+
+  function etaInfo() {
+    const now = parisNow();
+    let dl = Math.ceil(businessDeadline(now, 24) / 300000) * 300000;
+    let evening = false;
+    let morning = false;
+    if (dl % DAY === 0) { dl -= 60000; evening = true; }
+    else if (new Date(dl).getUTCHours() < 8) { morning = true; }
+    const d = new Date(dl);
+    const diff = Math.round((Math.floor(dl / DAY) - Math.floor(now / DAY)));
+    const dayName = diff === 1 ? 'demain' : DAYS[d.getUTCDay()];
+    const when = evening
+      ? dayName + ' soir'
+      : morning
+      ? dayName + ' matin'
+      : dayName + ' avant ' + d.getUTCHours() + NB + 'h' + NB + String(d.getUTCMinutes()).padStart(2, '0');
+    const n = d.getUTCDate();
+    const full = DAYS[d.getUTCDay()] + ' ' + n + (n === 1 ? 'er' : '') + ' ' + MONTHS[d.getUTCMonth()];
+    return { when, date: full.charAt(0).toUpperCase() + full.slice(1) };
+  }
+
+  const etaWhen = $$('.eta-when');
+  const etaDate = $$('.eta-date');
+  function updateEta() {
+    const info = etaInfo();
+    etaWhen.forEach((el) => setText(el, info.when));
+    etaDate.forEach((el) => setText(el, info.date));
+  }
+  updateEta();
+  setInterval(updateEta, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) updateEta(); });
 
   /* ---------- La bulle : ouverture, palette et réactions à la souris ---------- */
 
@@ -601,6 +724,39 @@
   current = target = measure();
   apply(current);
 
+  /* ---------- Section finale : bulle géante et bulles à éclater ---------- */
+
+  const finalSection = $('#final');
+  let finalTick = false;
+  function updateFinal() {
+    finalTick = false;
+    if (reduceMotion.matches) { finalSection.style.setProperty('--fp', '1'); return; }
+    const r = finalSection.getBoundingClientRect();
+    const vh = window.innerHeight || 800;
+    if (r.top > vh * 1.2 || r.bottom < -100) return;
+    const fp = clamp((vh - r.top) / (vh * 0.85));
+    finalSection.style.setProperty('--fp', fp.toFixed(3));
+  }
+  const kickFinal = () => { if (!finalTick) { finalTick = true; requestAnimationFrame(updateFinal); } };
+  window.addEventListener('scroll', kickFinal, { passive: true });
+  window.addEventListener('resize', kickFinal);
+  updateFinal();
+
+  $$('.pop', finalSection).forEach((pop) => {
+    pop.addEventListener('click', () => pop.classList.add('is-popped'), { once: true });
+  });
+
+  if ('IntersectionObserver' in window) {
+    const revealer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) { entry.target.classList.add('is-in'); revealer.unobserve(entry.target); }
+      });
+    }, { threshold: 0.2 });
+    revealer.observe(finalSection);
+  } else {
+    finalSection.classList.add('is-in');
+  }
+
   /* ---------- Animations : pause hors écran et bouton pause ---------- */
 
   if ('IntersectionObserver' in window) {
@@ -609,6 +765,7 @@
     }, { rootMargin: '80px 0px' });
     watcher.observe(hero);
     watcher.observe(s2);
+    watcher.observe(finalSection);
   }
 
   const motionBtn = $('#motion-toggle');

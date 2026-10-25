@@ -69,11 +69,11 @@
 <button type="button" class="rating" data-open="panel-avis" aria-label="Note de 4,9 sur 5 sur 30 avis Wix, voir les avis"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#EF7AA4"/></svg><strong>4,9/5</strong> · 30 avis sur Wix</button>
 </div>
 
-<div id="lp-form-wrap">
+<div id="lp-form-wrap" class="form-wrap">
 <div class="field-wrap">
-<form id="bulle-form" class="field" novalidate data-endpoint="">
-<svg id="icon-site" class="field-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg>
-<svg id="icon-mail" class="field-icon" aria-hidden="true" viewBox="0 0 24 24" hidden><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
+<form id="lp-form" class="field" novalidate data-endpoint="">
+<svg id="lp-icon-site" class="field-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg>
+<svg id="lp-icon-mail" class="field-icon" aria-hidden="true" viewBox="0 0 24 24" hidden><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
 <input id="lp-field" name="site" type="text" placeholder="www.votre-site.fr" autocomplete="url" inputmode="url" spellcheck="false" aria-describedby="lp-step lp-privacy">
 <input id="lp-website" class="trap" type="text" name="lp_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 <button type="submit" class="btn btn-pink btn-field" data-magnet><span id="lp-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
@@ -89,7 +89,7 @@
 
 <div id="lp-done" class="done" hidden>
 <span class="done-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span>
-<span class="done-text"><strong>C’est noté ! Votre bulle arrive sous 24 h.</strong><span>Nous l’envoyons à <span id="lp-done-mail">votre adresse</span>.</span></span>
+<span class="done-text"><strong>C’est noté ! Votre bulle arrive sous 24 h.</strong><span>Nous l’envoyons à <span id="lp-done-mail">votre adresse</span>, au plus tard <span class="done-eta">bientôt</span>.</span></span>
 <button type="button" id="lp-restart" class="btn btn-ghost btn-sm">Nouvelle demande</button>
 </div>
 </div>
@@ -303,6 +303,82 @@
 </div>
 </div>
 </section>
+
+<section id="final" class="final" aria-labelledby="final-title">
+<div class="final-bg" aria-hidden="true">
+<div class="final-glow"></div>
+<div class="final-bubble"><span class="fb-film"></span><span class="fb-shimmer"></span><span class="fb-core"></span><span class="fb-rim"></span><span class="fb-shine"></span><span class="fb-shine-2"></span></div>
+<span class="rise" style="--x:8%;--s:10px;--d:28s;--dl:-6s"></span>
+<span class="rise" style="--x:24%;--s:6px;--d:24s;--dl:-14s"></span>
+<span class="rise" style="--x:76%;--s:12px;--d:30s;--dl:-3s"></span>
+<span class="rise" style="--x:91%;--s:8px;--d:26s;--dl:-19s"></span>
+</div>
+
+<div class="final-inner wrap">
+<p class="eyebrow final-eyebrow"><span class="pulse-dot" aria-hidden="true"><span></span></span>À vous de jouer</p>
+<h2 id="final-title" class="final-title">Prêt à souffler<br><span class="final-iris">votre bulle ?</span></h2>
+<p class="final-lead">Une adresse, un e-mail : demain, vous explorez votre futur site.</p>
+
+<div class="final-zone">
+<ul class="sr-only">
+<li>Gratuit</li><li>Sans engagement</li><li>Sous 24 h ouvrées</li><li>Sur mesure</li><li>Sans carte bancaire</li>
+</ul>
+<div class="pops" aria-hidden="true">
+<span class="pop" style="--px:-16%;--py:8%;--ps:118px;--pd:7s;--pdl:-1s;--pc:239,122,164"><span class="pop-ball"></span><span class="pop-label">Gratuit</span><span class="pop-drops"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+<span class="pop" style="--px:116%;--py:10%;--ps:132px;--pd:8s;--pdl:-3s;--pc:127,212,234"><span class="pop-ball"></span><span class="pop-label">Sans engagement</span><span class="pop-drops"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+<span class="pop" style="--px:-18%;--py:90%;--ps:124px;--pd:7.5s;--pdl:-2s;--pc:195,177,247"><span class="pop-ball"></span><span class="pop-label">Sur mesure</span><span class="pop-drops"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+<span class="pop" style="--px:118%;--py:76%;--ps:112px;--pd:6.5s;--pdl:-4s;--pc:243,207,122"><span class="pop-ball"></span><span class="pop-label">Sous 24 h</span><span class="pop-drops"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+<span class="pop" style="--px:-26%;--py:48%;--ps:116px;--pd:8.5s;--pdl:-5s;--pc:168,238,219"><span class="pop-ball"></span><span class="pop-label">Sans carte bancaire</span><span class="pop-drops"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>
+</div>
+
+<div class="final-card">
+<div class="field-head">
+<label id="fin-label" for="fin-field">Votre site actuel</label>
+<button type="button" id="fin-toggle" class="text-btn final-toggle">Pas encore de site ?</button>
+</div>
+<div id="fin-form-wrap" class="form-wrap">
+<div class="field-wrap">
+<form id="fin-form" class="field" novalidate>
+<svg id="fin-icon-site" class="field-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg>
+<svg id="fin-icon-mail" class="field-icon" aria-hidden="true" viewBox="0 0 24 24" hidden><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7l8 6 8-6"/></svg>
+<input id="fin-field" name="site" type="text" placeholder="www.votre-site.fr" autocomplete="url" inputmode="url" spellcheck="false" aria-describedby="fin-step fin-privacy">
+<input id="fin-website" class="trap" type="text" name="lp_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+<button type="submit" class="btn btn-pink btn-field" data-magnet><span id="fin-cta-label">Créer ma bulle</span><svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+</form>
+</div>
+<div class="field-foot">
+<p id="fin-step">Étape 1 sur 2 · Vos coordonnées juste après.</p>
+<button type="button" id="fin-edit" class="text-btn" hidden>Modifier l’adresse</button>
+</div>
+<p id="fin-privacy" class="privacy" hidden>Votre e-mail sert uniquement à vous envoyer votre maquette et à en discuter avec vous.</p>
+</div>
+<div id="fin-done" class="done final-done" hidden>
+<span class="done-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span>
+<span class="done-text"><strong>Votre bulle est en route !</strong><span>Nous l’envoyons à <span id="fin-done-mail">votre adresse</span>, au plus tard <span class="done-eta">bientôt</span>.</span></span>
+<button type="button" id="fin-restart" class="btn btn-ghost btn-sm">Nouvelle demande</button>
+</div>
+<p id="fin-status" class="sr-only" role="status"></p>
+<div class="eta">
+<span class="eta-dot" aria-hidden="true"></span>
+<p class="eta-main">Demandez maintenant, découvrez-la au plus tard <strong class="eta-when">très vite</strong>.</p>
+<p class="eta-sub"><span class="eta-date"></span>heure de Paris · week-ends et jours fériés exclus</p>
+</div>
+</div>
+</div>
+
+<ol class="timeline">
+<li class="tl-item"><span class="tl-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></svg></span><span class="tl-when">Aujourd’hui</span><span class="tl-what">Vous donnez votre adresse ou votre activité.</span></li>
+<li class="tl-item"><span class="tl-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 C12.6 8.2 15.8 11.4 22 12 C15.8 12.6 12.6 15.8 12 22 C11.4 15.8 8.2 12.6 2 12 C8.2 11.4 11.4 8.2 12 2 Z"/></svg></span><span class="tl-when">Sous 24 h ouvrées</span><span class="tl-what">Vous explorez votre bulle, comme un vrai site.</span></li>
+<li class="tl-item"><span class="tl-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span><span class="tl-when">Ensuite</span><span class="tl-what">Vous décidez, sans engagement.</span></li>
+</ol>
+
+<div class="final-trust">
+<button type="button" class="rating" data-open="panel-avis" aria-label="Note de 4,9 sur 5 sur 30 avis Wix, voir les avis"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z" fill="#EF7AA4"/></svg><strong>4,9/5</strong> · 30 avis sur Wix</button>
+<span class="trust-sep" aria-hidden="true"></span>
+<p class="top-badge"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.6c0 4.6-3.2 8.2-7.5 9.4-4.3-1.2-7.5-4.8-7.5-9.4V6z"/><path d="M8.6 12.2l2.4 2.3 4.4-4.6"/></svg>Partenaire Wix depuis 2019</p>
+</div>
+</div>
+</section>
 </main>
 
 <footer class="footer">
@@ -351,7 +427,7 @@
 <div class="faq">
 <details open><summary>La maquette est-elle vraiment gratuite ?<span class="chev" aria-hidden="true"></span></summary><p>Oui. L’aperçu de votre futur site est offert : aucun paiement, aucune carte bancaire. Vous ne payez que si vous décidez ensuite de lancer la création.</p></details>
 <details><summary>Que vais-je recevoir exactement ?<span class="chev" aria-hidden="true"></span></summary><p>Une première version personnalisée et navigable de votre site, imaginée pour votre activité. Vous la parcourez comme un vrai site, sur ordinateur comme sur mobile.</p></details>
-<details><summary>En combien de temps ?<span class="chev" aria-hidden="true"></span></summary><p>Sous 24 h après votre demande : nous vous envoyons le lien de votre bulle par e-mail.</p></details>
+<details><summary>En combien de temps ?<span class="chev" aria-hidden="true"></span></summary><p>Sous 24 h ouvrées après votre demande, week-ends et jours fériés exclus : nous vous envoyons le lien de votre bulle par e-mail.</p></details>
 <details><summary>Je n’ai pas encore de site, c’est possible ?<span class="chev" aria-hidden="true"></span></summary><p>Bien sûr. Cliquez sur « Pas encore de site ? » et décrivez votre activité en quelques mots : nous partons de là.</p></details>
 <details><summary>Et après la maquette ?<span class="chev" aria-hidden="true"></span></summary><p>Vous décidez. Si elle vous plaît, nous vous proposons un devis pour la création ou la refonte complète. Sinon, vous la gardez en souvenir, sans engagement.</p></details>
 <details><summary>Sur quelle plateforme sera mon site ?<span class="chev" aria-hidden="true"></span></summary><p>Sur Wix Studio. P’tit Kiwi est partenaire Wix depuis 2019, et vous gardez la main sur vos contenus une fois le site en ligne.</p></details>
