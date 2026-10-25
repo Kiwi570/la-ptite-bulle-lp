@@ -136,7 +136,7 @@
       f.inputMode = state.noSite ? 'text' : 'url';
       f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
       setText(v.ctaLabel, 'Créer ma bulle');
-      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste après.';
+      defaultStep = 'Étape 1 sur 2 · Vos coordonnées juste' + NB + 'après.';
     }
     f.readOnly = state.sending;
     const err = mine ? state.error : '';
@@ -429,7 +429,7 @@
     const diff = Math.round((Math.floor(dl / DAY) - Math.floor(now / DAY)));
     const dayName = diff === 0 ? 'aujourd’hui' : diff === 1 ? 'demain' : DAYS[d.getUTCDay()];
     const when = evening
-      ? (diff === 0 ? 'ce soir' : dayName + ' soir')
+      ? (diff === 0 ? 'ce' + NB + 'soir' : dayName + NB + 'soir')
       : morning
       ? dayName + ' matin'
       : dayName + ' avant ' + d.getUTCHours() + NB + 'h';
@@ -802,10 +802,10 @@
   if ('IntersectionObserver' in window) {
     const revealer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) { entry.target.classList.add('is-in'); revealer.unobserve(entry.target); }
+        if (entry.isIntersecting) { finalSection.classList.add('is-in'); revealer.unobserve(entry.target); }
       });
-    }, { threshold: 0.2 });
-    revealer.observe(finalSection);
+    }, { threshold: 0.25 });
+    revealer.observe($('.timeline', finalSection) || finalSection);
   } else {
     finalSection.classList.add('is-in');
   }
