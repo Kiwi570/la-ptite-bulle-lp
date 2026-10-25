@@ -848,6 +848,27 @@ section[id],#lp-field,#fin-field{scroll-margin-top:calc(var(--bar-h) + 16px)}
 @media (min-width:1900px){.motion-toggle{left:auto;right:max(16px,calc((100% - 1680px) / 2 + 48px))}}
 @media (max-height:620px){.promise{margin-top:0}.field-block{margin-top:0}}
 
+
+/* v18 : la hero occupe toute la hauteur de l'écran */
+@media (min-width:1080px){
+  :root .hero .hero-copy{gap:0;max-width:700px;container-type:inline-size}
+  :root .hero .hero-visual{flex:0 1 auto}
+  :root .hero .hero-title{font-size:clamp(38px,min(9.2cqw,7.4vh),90px);margin-top:clamp(14px,5vh,72px)}
+  :root .hero .promise{font-size:clamp(21px,min(2.2vw,4vh),46px);margin-top:clamp(10px,2.4vh,32px)}
+  :root .hero .lead{font-size:clamp(16px,min(1.25vw,2.3vh),21px);margin-top:clamp(16px,6.6vh,88px)}
+  :root .hero .field-block{margin-top:clamp(20px,8.8vh,120px)}
+  :root .hero .hero-extra{margin-top:clamp(14px,4vh,56px)}
+  :root .hero .stage{width:clamp(260px,min(31vw,56vh),640px)}
+}
+@media (min-width:1900px){
+  :root .hero .hero-copy{max-width:min(46vw,1000px)}
+  :root .hero .hero-title{font-size:clamp(48px,min(9.2cqw,7.4vh),96px)}
+  :root .hero .promise{font-size:clamp(26px,min(1.9vw,3.9vh),50px)}
+  :root .hero .lead{font-size:clamp(19px,1.5vh,23px);margin-top:clamp(16px,7.6vh,130px)}
+  :root .hero .field-block{margin-top:clamp(20px,10.4vh,170px)}
+  :root .hero .stage{width:clamp(260px,min(28vw,54vh),720px)}
+}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
