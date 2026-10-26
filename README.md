@@ -11,7 +11,7 @@ Site statique en HTML, CSS et JavaScript, sans étape de construction. Les polic
 
 ## Recevoir les demandes
 
-Les deux formulaires sont simulés tant que `data-endpoint` est vide (`index.html`, balise `<form id="lp-form">` de la hero ; le formulaire final utilise la même adresse).
+Les deux formulaires envoient les demandes à `/api/lead` (attribut `data-endpoint` de `<form id="lp-form">`, utilisé aussi par le formulaire du bas).
 Indiquez une adresse qui accepte un envoi JSON en POST, par exemple un formulaire Formspree (`https://formspree.io/f/xxxxxx`), Web3Forms ou un webhook.
 
 Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (hero ou final), `page`, `date`. Un champ piège invisible (`lp_hp`) écarte les robots côté navigateur ; à transmettre au service de réception sous le nom qu’il attend (par exemple `botcheck` pour Web3Forms, `_gotcha` pour Formspree).
@@ -29,3 +29,15 @@ Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour.
 ## Date de fin (facultatif)
 
 L’offre n’a plus de date de fin. Pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-MM-JJTHH:MM:SSZ"` (heure UTC) sur `<div id="offer">` et rétablissez le minuteur dans le bandeau : à l’échéance, la page passe en mode « offre terminée ».
+
+## Enregistrement des contacts (Vercel + Upstash Redis)
+
+- `api/lead.js` reçoit chaque demande, vérifie l’adresse et l’e-mail, écarte les robots (champ piège, envois depuis un autre site, 8 demandes maximum par IP et par heure) et l’ajoute à la liste Redis `lpb:leads`.
+- `api/leads.js` affiche les contacts, protégés par mot de passe : `https://la-ptite-bulle-lp.vercel.app/api/leads` (identifiant au choix, mot de passe = `ADMIN_PASSWORD`). Bouton « Télécharger en CSV » pour Excel, Numbers ou Google Sheets.
+
+Mise en place (une seule fois, avant de déployer ce code) :
+1. Vercel → projet → onglet **Storage** → **Create Database** → **Upstash for Redis** (offre gratuite), région européenne (Francfort ou Irlande) → la relier au projet, environnements Production et Preview. Les variables `KV_REST_API_URL` et `KV_REST_API_TOKEN` (ou `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`) sont ajoutées automatiquement.
+2. **Settings → Environment Variables** : ajouter `ADMIN_PASSWORD` (un mot de passe long).
+3. Déployer (git push). Les variables ne s’appliquent qu’aux nouveaux déploiements.
+
+Supprimer un contact (droit à l’effacement) : console Upstash → Data Browser → clé `lpb:leads`.

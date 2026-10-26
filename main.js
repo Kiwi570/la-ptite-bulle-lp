@@ -220,6 +220,7 @@
       email: state.email.trim(),
       origine: v === heroView ? 'hero' : 'final',
       page: window.location.href,
+      lp_hp: v.trap ? v.trap.value : '',
       date: new Date().toISOString()
     };
     const ctrl = 'AbortController' in window ? new AbortController() : null;
