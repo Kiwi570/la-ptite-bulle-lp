@@ -897,6 +897,49 @@ section[id],#lp-field,#fin-field{scroll-margin-top:calc(var(--bar-h) + 16px)}
   .ot b{font-size:19px}
 }
 
+
+/* v22 : corrections de l'audit */
+.nowrap{white-space:nowrap}
+@media (min-width:1080px){:root .hero .hero-visual{padding-right:clamp(28px,4.4vw,72px)}}
+@media (max-width:1079px){:root .hero .cue{display:none}}
+.check-rating .rating{min-height:28px;padding:4px 0}
+.final-note{text-wrap:balance}
+@media (max-width:560px){
+  .final-eyebrow{display:block;text-align:center;line-height:1.6;text-wrap:balance}
+  .final-eyebrow .pulse-dot{display:inline-block;vertical-align:-2px;margin-right:8px}
+  .s2-actions{flex-direction:column;align-items:stretch}
+  .s2-actions .btn{justify-content:center}
+}
+.panel-bubble{width:120px;height:120px;top:calc(clamp(24px,4vh,40px) - 38px);right:calc(clamp(20px,3vw,40px) - 38px);opacity:.6}
+.panel-title{text-wrap:balance}
+@media (max-width:900px){
+  .topbar .nav{display:flex;gap:6px;margin-left:auto}
+  .topbar .nav a{display:none}
+  .topbar .nav button{padding:9px 13px;border:1px solid rgba(246,241,231,.16);border-radius:999px;background:rgba(18,23,47,.55);font-size:14px;color:var(--cream)}
+}
+@media (max-width:340px){.topbar .nav button[data-open="panel-avis"]{display:none}}
+.year{width:max(36px,8.4cqw);height:max(36px,8.4cqw)}
+.year-face{font-size:max(10.5px,2.2cqw)}
+.year-note{left:max(32px,6.8cqw)}
+
+
+/* v23 : corrections code, accessibilité et performance */
+html.is-paused *,html.is-paused *::before,html.is-paused *::after{animation-delay:-999s!important;animation-play-state:paused!important}
+html{scrollbar-gutter:stable}
+.text-btn{min-height:24px;padding-block:3px}
+.final-bubble{will-change:auto}
+.final:not(.is-off) .final-bubble{will-change:translate,scale,opacity}
+@media (pointer:coarse){.bubble{animation:birth 1.5s .35s cubic-bezier(.3,.7,.3,1) both}}
+
+
+/* v23b : hauteur du bandeau connue d'avance (pas de décalage au chargement), badge partenaire sur mobile */
+:root{--bar-h:46px}
+@media (max-width:640px){:root{--bar-h:42px}}
+@media (max-height:500px){:root{--bar-h:36px}}
+@media (min-width:1180px) and (min-height:560px){:root{--bar-h:58px}}
+@media (min-width:1900px) and (min-height:560px){:root{--bar-h:64px}}
+@media (max-width:640px){.tb-more{display:none}}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}

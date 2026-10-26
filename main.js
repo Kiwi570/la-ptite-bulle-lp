@@ -6,6 +6,7 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const clamp = (v) => Math.max(0, Math.min(1, v));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const motionOff = () => reduceMotion.matches || document.documentElement.classList.contains('is-paused');
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
   const NB = ' ';
   const NNB = ' ';
@@ -90,7 +91,7 @@
     if (state.step === 2) return 'plus qu’une étape' + NB + ': votre e-mail';
     if (lit >= 4) return 'votre futur site se dessine' + NNB + '!';
     if (len > 0) return 'votre maquette prend forme…';
-    return state.noSite ? 'décrivez votre activité ici' : 'indiquez l’adresse de votre site';
+    return state.noSite ? 'la bulle attend votre activité' : 'la bulle attend votre adresse';
   }
 
   function renderView(v) {
@@ -205,6 +206,11 @@
     }, delay);
   }
 
+  function siteOk(raw) {
+    const host = raw.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[\/?#\s]/)[0];
+    return /^(?:[a-z0-9\u00a1-\uffff](?:[a-z0-9\u00a1-\uffff-]*[a-z0-9\u00a1-\uffff])?\.)+[a-z\u00a1-\uffff]{2,}$/.test(host);
+  }
+
   async function sendRequest(v) {
     if (v.trap && v.trap.value) return true;
     if (!endpoint) return true;
@@ -213,7 +219,6 @@
       site: state.site.trim(),
       email: state.email.trim(),
       origine: v === heroView ? 'hero' : 'final',
-      offreJusqua: offerBar.dataset.end,
       page: window.location.href,
       date: new Date().toISOString()
     };
@@ -262,13 +267,17 @@
           fail(v, state.noSite ? 'Décrivez d’abord votre activité en quelques mots.' : 'Indiquez d’abord l’adresse de votre site.');
           return;
         }
+        if (!state.noSite && !siteOk(state.site)) {
+          fail(v, 'Cette adresse semble incomplète. Exemple' + NB + ': monsite.fr');
+          return;
+        }
         state.step = 2;
         state.error = '';
         render();
         v.field.blur();
         try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); }
       } else if (state.step === 2) {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(state.email.trim())) {
+        if (!/^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim())) {
           fail(v, 'Cette adresse e-mail semble incomplète.');
           return;
         }
@@ -309,7 +318,8 @@
     });
   });
 
-  $('#bubble-bounce').addEventListener('click', bounce);
+  const bounceBtn = $('#bubble-bounce');
+  if (bounceBtn) bounceBtn.addEventListener('click', bounce);
 
   $$('[data-goto-field]').forEach((btn) => btn.addEventListener('click', () => {
     const dialog = btn.closest('dialog');
@@ -328,18 +338,22 @@
   /* ---------- Offre limitée : compte à rebours réel ---------- */
 
   const offerBar = $('#offer');
-  const offerEnd = Date.parse(offerBar.dataset.end);
+  const offerEnd = offerBar && offerBar.dataset.end ? Date.parse(offerBar.dataset.end) : NaN;
+  const hasEnd = Number.isFinite(offerEnd);
   const timeParts = { h: $$('[data-t="h"]'), m: $$('[data-t="m"]'), s: $$('[data-t="s"]') };
   const secBubble = $('.cd-sec');
   let offerTimer = 0;
   const pad = (n) => String(n).padStart(2, '0');
 
+  let barPx = 0;
   function syncBarHeight() {
-    const sticky = !document.documentElement.classList.contains('offer-ended');
-    document.documentElement.style.setProperty('--bar-h', sticky ? offerBar.offsetHeight + 'px' : '0px');
+    const sticky = offerBar && !document.documentElement.classList.contains('offer-ended');
+    barPx = sticky ? offerBar.offsetHeight : 0;
+    document.documentElement.style.setProperty('--bar-h', barPx + 'px');
   }
 
   function offerTick() {
+    if (!hasEnd) return;
     const left = offerEnd - Date.now();
     if (!(left > 0)) {
       document.documentElement.classList.add('offer-ended');
@@ -361,7 +375,7 @@
 
   offerTick();
   syncBarHeight();
-  if (!document.documentElement.classList.contains('offer-ended')) offerTimer = setInterval(offerTick, 1000);
+  if (hasEnd && !document.documentElement.classList.contains('offer-ended')) offerTimer = setInterval(offerTick, 1000);
   window.addEventListener('resize', syncBarHeight);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) offerTick(); });
 
@@ -520,7 +534,7 @@
   const kickTilt = () => { if (!tiltFrame) tiltFrame = requestAnimationFrame(tiltLoop); };
 
   hero.addEventListener('pointermove', (event) => {
-    if (!finePointer.matches || reduceMotion.matches) return;
+    if (!finePointer.matches || motionOff()) return;
     const r = stage.getBoundingClientRect();
     tilt.tx = Math.max(-1, Math.min(1, (event.clientX - (r.left + r.width / 2)) / r.width)) * 10;
     tilt.ty = Math.max(-1, Math.min(1, (event.clientY - (r.top + r.height / 2)) / r.height)) * 10;
@@ -538,7 +552,7 @@
     let ox = 0;
     let oy = 0;
     btn.addEventListener('pointermove', (event) => {
-      if (!finePointer.matches || reduceMotion.matches) return;
+      if (!finePointer.matches || motionOff()) return;
       const r = btn.getBoundingClientRect();
       const cx = r.left - ox + r.width / 2;
       const cy = r.top - oy + r.height / 2;
@@ -663,8 +677,7 @@
     if (pinnedQuery.matches) {
       const r = s2.getBoundingClientRect();
       const dist = Math.max(1, r.height - pin.offsetHeight);
-      const barH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 0;
-      p = (barH - r.top + 60) / dist;
+      p = (barPx - r.top + 60) / dist;
     } else {
       const fr = frameEl.getBoundingClientRect();
       const start = vh * 0.92;
@@ -766,7 +779,8 @@
     kick();
   }
 
-  $('#replay').addEventListener('click', () => {
+  const replayBtn = $('#replay');
+  if (replayBtn) replayBtn.addEventListener('click', () => {
     hold = null;
     tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200, startP: measure() };
     kick();
@@ -784,7 +798,7 @@
   let finalTick = false;
   function updateFinal() {
     finalTick = false;
-    if (reduceMotion.matches) { finalBg.style.setProperty('--fp', '1'); return; }
+    if (motionOff()) { finalBg.style.setProperty('--fp', '1'); return; }
     const r = finalSection.getBoundingClientRect();
     const vh = window.innerHeight || 800;
     if (r.top > vh * 1.2 || r.bottom < -100) return;
@@ -827,12 +841,15 @@
   function setPaused(on, save) {
     document.documentElement.classList.toggle('is-paused', on);
     motionLabel.textContent = on ? 'Relancer' : 'Pause';
+    motionBtn.setAttribute('aria-label', on ? 'Relancer les animations' : 'Mettre en pause les animations');
+    if (on) { tilt.tx = 0; tilt.ty = 0; pointer = null; kickTilt(); }
+    kickFinal();
     if (save) { try { localStorage.setItem('lpb-paused', on ? '1' : '0'); } catch (e) { /* stockage indisponible */ } }
   }
   motionBtn.addEventListener('click', () => setPaused(!document.documentElement.classList.contains('is-paused'), true));
   let storedPause = false;
   try { storedPause = localStorage.getItem('lpb-paused') === '1'; } catch (e) { storedPause = false; }
-  if (storedPause) setTimeout(() => setPaused(true, false), 2600);
+  setPaused(storedPause, false);
 
   /* ---------- Panneaux Avis et FAQ ---------- */
 

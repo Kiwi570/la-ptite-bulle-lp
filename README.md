@@ -14,7 +14,7 @@ Site statique en HTML, CSS et JavaScript, sans étape de construction. Les polic
 Les deux formulaires sont simulés tant que `data-endpoint` est vide (`index.html`, balise `<form id="lp-form">` de la hero ; le formulaire final utilise la même adresse).
 Indiquez une adresse qui accepte un envoi JSON en POST, par exemple un formulaire Formspree (`https://formspree.io/f/xxxxxx`), Web3Forms ou un webhook.
 
-Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (hero ou final), `page`, `date`. Un champ piège invisible (`website`) écarte les robots.
+Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (hero ou final), `page`, `date`. Un champ piège invisible (`lp_hp`) écarte les robots côté navigateur ; à transmettre au service de réception sous le nom qu’il attend (par exemple `botcheck` pour Web3Forms, `_gotcha` pour Formspree).
 
 ## À compléter avant de diffuser
 
@@ -25,3 +25,7 @@ Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (her
 ## Mise en ligne
 
 Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour.
+
+## Date de fin (facultatif)
+
+L’offre n’a plus de date de fin. Pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-MM-JJTHH:MM:SSZ"` (heure UTC) sur `<div id="offer">` et rétablissez le minuteur dans le bandeau : à l’échéance, la page passe en mode « offre terminée ».
