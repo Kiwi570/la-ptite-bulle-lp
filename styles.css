@@ -982,6 +982,16 @@ html{scrollbar-gutter:stable}
 .faq-list li::before{content:"";position:absolute;left:2px;top:.6em;width:8px;height:8px;border-radius:50%;background:var(--cyan)}
 .faq-list strong{display:block;font-weight:700;color:var(--cream)}
 
+/* v25 : avis clients de P’tit Kiwi */
+.review{border-style:solid;border-color:rgba(246,241,231,.14)}
+.stars i.off{background:rgba(246,241,231,.2)}
+.panel-note a{color:var(--cream);text-underline-offset:3px}
+.panel-note{position:relative;z-index:1}
+.trust-line{align-items:flex-start;line-height:1.45}
+.trust-line svg{margin-top:-1px}
+.footer-legal{text-align:right}
+@media (max-width:560px){.footer-legal{text-align:left}}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
