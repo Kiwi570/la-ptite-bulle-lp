@@ -796,8 +796,6 @@ section[id],#lp-field,#fin-field{scroll-margin-top:calc(var(--bar-h) + 16px)}
 @media (max-width:380px) and (max-height:700px){.hero-title{font-size:32px}.hero-copy{gap:12px}}
 @media (max-height:500px){.hero-title{font-size:28px}.hero-copy{gap:8px}}
 
-.eb-short{display:none}
-@media (max-width:480px){.eb-full{display:none}.eb-short{display:inline}}
 
 /* v16 : encore plus d'air */
 .hero-copy{gap:clamp(20px,3.4vh,40px)}
@@ -939,6 +937,50 @@ html{scrollbar-gutter:stable}
 @media (min-width:1180px) and (min-height:560px){:root{--bar-h:58px}}
 @media (min-width:1900px) and (min-height:560px){:root{--bar-h:64px}}
 @media (max-width:640px){.tb-more{display:none}}
+
+/* v24 : offre clarifiée (titre, promesse, note près du formulaire, clôture des demandes) */
+/* Bandeau : date limite des demandes en entier dès que la place le permet */
+@media (min-width:861px) and (max-width:1279px){.offer-tag{display:none}}
+.os-req{display:none}
+@media (min-width:601px),(min-width:420px) and (max-width:480px),(max-width:340px){.os-req{display:inline}}
+@media (max-width:340px){.os-count{display:none}}
+/* Surtitre : sur deux lignes si besoin, pastille alignée sur la première */
+.hero-eyebrow{align-items:flex-start;line-height:1.5;text-wrap:balance}
+.hero-eyebrow .pulse-dot{margin-top:2px}
+/* Titre : « Découvrez votre futur site » tient sur une ligne */
+@media (min-width:1080px){:root .hero .hero-title{font-size:clamp(36px,min(8.3cqw,7.4vh),90px)}}
+@media (min-width:1900px){:root .hero .hero-title{font-size:clamp(44px,min(8.3cqw,7.4vh),96px)}}
+/* Promesse : la maquette, le délai et la gratuité dans une seule phrase */
+.promise{line-height:1.25;text-wrap:balance}
+.promise-free{margin-right:.04em}
+@media (min-width:1080px){
+  :root .hero .promise{font-size:clamp(19px,min(3.9cqw,3.3vh),38px);margin-top:clamp(10px,2.2vh,28px)}
+  :root .hero .lead{margin-top:clamp(12px,3vh,48px)}
+  :root .hero .field-block{margin-top:clamp(16px,4.2vh,72px)}
+  :root .hero .hero-extra{margin-top:clamp(10px,2.2vh,32px)}
+}
+@media (max-width:1079px){.promise{font-size:clamp(19px,2.2vw,24px)}}
+@media (max-width:560px){.promise{font-size:clamp(17px,4.9vw,21px)}}
+@media (max-width:380px) and (max-height:700px){.promise{font-size:17px}}
+@media (max-height:500px){.promise{font-size:16px}}
+/* Tablette en deux colonnes : le contenu, un peu plus haut, ne passe pas sous le bouton Pause */
+@media (min-width:960px) and (max-width:1079px){.hero-main{padding-bottom:72px}}
+/* Note près du formulaire et lien vers la FAQ */
+.offer-note{margin:0;font-weight:500;font-size:14px;line-height:1.5;color:var(--muted-2);text-wrap:pretty}
+.offer-note .text-btn,.eta-sub .text-btn{font-size:inherit;color:var(--cream);white-space:nowrap}
+@media (max-height:500px){.offer-note{font-size:13px}}
+/* Section finale : délai de la maquette, puis clôture des demandes */
+.final-note{font-size:13.5px;line-height:1.5;color:#D9DCE8}
+.final-note strong{font-weight:800;color:var(--cream)}
+/* FAQ : « Que comprend l’offre ? » */
+.faq details{scroll-margin-top:16px}
+.faq-body{display:flex;flex-direction:column;gap:12px;padding:0 20px 20px}
+.faq .faq-body p{padding:0;animation:none}
+.faq details[open] .faq-body{animation:rise-in .35s ease both}
+.faq-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.faq-list li{position:relative;padding-left:20px;font-weight:500;font-size:15px;line-height:1.6;color:var(--muted)}
+.faq-list li::before{content:"";position:absolute;left:2px;top:.6em;width:8px;height:8px;border-radius:50%;background:var(--cyan)}
+.faq-list strong{display:block;font-weight:700;color:var(--cream)}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}

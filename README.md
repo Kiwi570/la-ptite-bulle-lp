@@ -4,7 +4,7 @@ Landing page de La P’tite Bulle, une expérience P’tit Kiwi.
 
 - **Écran 1** : la bulle naît à l’ouverture, suit la souris et prend une palette unique selon l’adresse tapée. Le formulaire se fait en deux temps (adresse ou activité, puis e-mail).
 - **Écran 2** : au défilement, la section se fige et le rouleau repeint un site daté en site moderne.
-- **Écran final** : « Prêt à souffler votre bulle ? », avec une bulle géante qui monte au défilement, le même formulaire que la hero (état partagé entre les deux), l’heure de livraison calculée en direct (24 h ouvrées, heure de Paris, week-ends et jours fériés français exclus) et des bulles d’arguments à faire éclater.
+- **Écran final** : « Prêt à souffler votre bulle ? », avec une bulle géante qui monte au défilement, le même formulaire que la hero (état partagé entre les deux), le délai de la première maquette (« sous 24 h ouvrées », sans heure précise affichée), la date limite des demandes et des bulles d’arguments à faire éclater.
 - **Avis et FAQ** : panneaux natifs (`<dialog>`) qui s’ouvrent par-dessus la page.
 
 Site statique en HTML, CSS et JavaScript, sans étape de construction. Les polices (Manrope, Bricolage Grotesque, Caveat, licence OFL) sont hébergées dans `fonts/`.
@@ -26,9 +26,11 @@ Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (her
 
 Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour.
 
-## Date de fin (facultatif)
+## Date de fin
 
-L’offre n’a plus de date de fin. Pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-MM-JJTHH:MM:SSZ"` (heure UTC) sur `<div id="offer">` et rétablissez le minuteur dans le bandeau : à l’échéance, la page passe en mode « offre terminée ».
+La clôture des demandes (« Offre limitée à 250 clients Wix · Demandes jusqu’au mercredi 28 octobre 2026 à 23 h 59, heure de Paris ») est écrite en texte fixe dans `index.html` : bandeau d’offre (versions longue et courtes), note sous le formulaire final, FAQ « Qui peut en profiter ? » et texte pour lecteurs d’écran du bandeau. Pour changer la date, modifiez ces quatre endroits. Aucun compte à rebours n’est actif et rien ne change automatiquement à l’échéance.
+
+Facultatif : pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-MM-JJTHH:MM:SSZ"` (heure UTC) sur `<div id="offer">` et rétablissez le minuteur dans le bandeau : à l’échéance, la page passe en mode « offre terminée ».
 
 ## Enregistrement des contacts (Vercel + Upstash Redis)
 

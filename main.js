@@ -44,7 +44,6 @@
       wrap: $('#' + p + '-form-wrap'),
       done: $('#' + p + '-done'),
       doneMail: $('#' + p + '-done-mail'),
-      doneEta: $('#' + p + '-done .done-eta'),
       restart: $('#' + p + '-restart'),
       toggle: $('#' + p + '-toggle'),
       toggleHide: $('#' + p + '-toggle-item') || $('#' + p + '-toggle'),
@@ -56,7 +55,7 @@
   const heroView = views[0];
   const endpoint = (heroView.form.dataset.endpoint || '').trim();
 
-  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView, eta: '' };
+  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView };
   let nudgeTimer = 0;
 
   function announce(view, message) {
@@ -108,7 +107,6 @@
       v.label.style.visibility = isDone ? 'hidden' : '';
     }
     setText(v.doneMail, state.email.trim() || 'votre adresse');
-    if (v.doneEta) setText(v.doneEta, state.eta || 'sous 24' + NB + 'h ouvrées');
     setHidden(v.toggleHide, state.step !== 1);
     setText(v.toggle, state.noSite ? 'J’ai déjà un site' : 'Pas encore de site' + NNB + '?');
     setHidden(v.edit, !isStep2);
@@ -291,7 +289,6 @@
           fail(v, 'L’envoi n’a pas abouti. Réessayez dans un instant.');
           return;
         }
-        state.eta = etaInfo().when;
         state.step = 3;
         render();
         bounce();
@@ -379,91 +376,6 @@
   if (hasEnd && !document.documentElement.classList.contains('offer-ended')) offerTimer = setInterval(offerTick, 1000);
   window.addEventListener('resize', syncBarHeight);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) offerTick(); });
-
-  /* ---------- Heure de livraison : 24 h ouvrées, heure de Paris ---------- */
-
-  const DAY = 86400000;
-  const DAYS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
-  const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-  const holidayCache = {};
-
-  function easterUTC(y) {
-    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4;
-    const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
-    const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
-    const month = Math.floor((h + l - 7 * m + 114) / 31);
-    const day = ((h + l - 7 * m + 114) % 31) + 1;
-    return Date.UTC(y, month - 1, day);
-  }
-
-  function holidays(y) {
-    if (holidayCache[y]) return holidayCache[y];
-    const set = new Set([[0, 1], [4, 1], [4, 8], [6, 14], [7, 15], [10, 1], [10, 11], [11, 25]].map(([mo, d]) => Date.UTC(y, mo, d)));
-    const easter = easterUTC(y);
-    [1, 39, 50].forEach((n) => set.add(easter + n * DAY));
-    holidayCache[y] = set;
-    return set;
-  }
-
-  function parisNow() {
-    try {
-      const parts = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-      }).formatToParts(new Date());
-      const get = (type) => Number(parts.find((x) => x.type === type).value);
-      return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
-    } catch (e) {
-      const d = new Date();
-      return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes());
-    }
-  }
-
-  function businessDeadline(start, hours) {
-    let t = start;
-    let left = hours * 3600000;
-    for (let guard = 0; guard < 40; guard++) {
-      const day = Math.floor(t / DAY) * DAY;
-      const date = new Date(day);
-      const wd = date.getUTCDay();
-      if (wd === 0 || wd === 6 || holidays(date.getUTCFullYear()).has(day)) { t = day + DAY; continue; }
-      const available = day + DAY - t;
-      if (left <= available) return t + left;
-      left -= available;
-      t = day + DAY;
-    }
-    return t;
-  }
-
-  function etaInfo() {
-    const now = parisNow();
-    let dl = Math.ceil(businessDeadline(now, 24) / 3600000) * 3600000;
-    let evening = false;
-    let morning = false;
-    if (dl % DAY === 0) { dl -= 60000; evening = true; }
-    else if (new Date(dl).getUTCHours() < 8) { morning = true; }
-    const d = new Date(dl);
-    const diff = Math.round((Math.floor(dl / DAY) - Math.floor(now / DAY)));
-    const dayName = diff === 0 ? 'aujourd’hui' : diff === 1 ? 'demain' : DAYS[d.getUTCDay()];
-    const when = evening
-      ? (diff === 0 ? 'ce' + NB + 'soir' : dayName + NB + 'soir')
-      : morning
-      ? dayName + ' matin'
-      : dayName + ' avant ' + d.getUTCHours() + NB + 'h';
-    const n = d.getUTCDate();
-    const full = DAYS[d.getUTCDay()] + ' ' + n + (n === 1 ? 'er' : '') + ' ' + MONTHS[d.getUTCMonth()];
-    return { when, date: full.charAt(0).toUpperCase() + full.slice(1) };
-  }
-
-  const etaWhen = $$('.eta-when');
-  const etaDate = $$('.eta-date');
-  function updateEta() {
-    const info = etaInfo();
-    etaWhen.forEach((el) => setText(el, info.when));
-    etaDate.forEach((el) => setText(el, info.date));
-  }
-  updateEta();
-  setInterval(updateEta, 60000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) updateEta(); });
 
   /* ---------- La bulle : ouverture, palette et réactions à la souris ---------- */
 
@@ -857,6 +769,19 @@
   $$('[data-open]').forEach((btn) => btn.addEventListener('click', () => {
     const dialog = document.getElementById(btn.dataset.open);
     if (dialog && !dialog.open) dialog.showModal();
+    // Lien « Que comprend l’offre ? » : ouvre directement la bonne réponse de la FAQ.
+    const item = btn.dataset.faq ? document.getElementById(btn.dataset.faq) : null;
+    if (dialog && item && dialog.contains(item)) {
+      item.open = true;
+      const summary = item.querySelector('summary');
+      requestAnimationFrame(() => {
+        const r = item.getBoundingClientRect();
+        if (r.top < 0 || r.bottom > window.innerHeight) {
+          try { item.scrollIntoView({ block: 'start' }); } catch (e) { item.scrollIntoView(); }
+        }
+        try { summary.focus({ preventScroll: true }); } catch (e) { summary.focus(); }
+      });
+    }
   }));
   $$('dialog.panel').forEach((dialog) => {
     let downOnBackdrop = false;
