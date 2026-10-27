@@ -55,7 +55,7 @@
   const heroView = views[0];
   const endpoint = (heroView.form.dataset.endpoint || '').trim();
 
-  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView };
+  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView, originView: heroView, scrollY: 0 };
   const sentKeys = new Set();
   let nudgeTimer = 0;
 
@@ -96,9 +96,8 @@
 
   function renderView(v) {
     const isDone = state.step === 3;
-    const isStep2 = state.step === 2;
     const mine = state.active === v;
-    if (v === heroView) v.label.closest('.field-head').classList.toggle('is-quiet', state.step === 1);
+    if (v === heroView) v.label.closest('.field-head').classList.toggle('is-quiet', !isDone);
     setHidden(v.wrap, isDone);
     setHidden(v.done, !isDone);
     if (v.card) {
@@ -110,46 +109,30 @@
     setText(v.doneMail, state.email.trim() || 'votre adresse');
     setHidden(v.toggleHide, state.step !== 1);
     setText(v.toggle, state.noSite ? 'J’ai déjà un site' : 'Pas encore de site' + NNB + '?');
-    setHidden(v.edit, !isStep2);
-    setText(v.edit, state.noSite ? 'Modifier l’activité' : 'Modifier l’adresse');
-    v.edit.disabled = state.sending;
-    setHidden(v.privacy, !isStep2);
-    v.field.setAttribute('aria-describedby', isStep2 ? v.stepText.id + ' ' + v.privacy.id : v.stepText.id);
-    v.iconSite.toggleAttribute('hidden', isStep2);
-    v.iconMail.toggleAttribute('hidden', !isStep2);
+    // L’e-mail se saisit désormais sur le second écran : ces éléments de l’ancienne étape 2 restent masqués.
+    setHidden(v.edit, true);
+    setHidden(v.privacy, true);
+    v.iconSite.removeAttribute('hidden');
+    v.iconMail.setAttribute('hidden', '');
+    v.field.setAttribute('aria-describedby', v.stepText.id);
 
-    let defaultStep;
     const f = v.field;
-    if (isStep2) {
-      setText(v.label, 'Où envoyer votre maquette' + NNB + '?');
-      if (f.type !== 'email') f.type = 'email';
-      f.name = 'email';
-      f.autocomplete = 'email';
-      f.inputMode = 'email';
-      f.placeholder = 'vous@exemple.fr';
-      setText(v.ctaLabel, state.sending && mine ? 'Enregistrement…' : 'Recevoir ma maquette');
-      defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
-    } else {
-      setText(v.label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
-      if (f.type !== 'text') f.type = 'text';
-      f.name = state.noSite ? 'activite' : 'site';
-      f.autocomplete = state.noSite ? 'off' : 'url';
-      f.inputMode = state.noSite ? 'text' : 'url';
-      f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
-      setText(v.ctaLabel, 'Découvrir mon futur site');
-      defaultStep = '';
-    }
-    f.readOnly = state.sending;
-    const err = mine ? state.error : '';
-    setText(v.stepText, err || defaultStep);
+    setText(v.label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
+    if (f.type !== 'text') f.type = 'text';
+    f.name = state.noSite ? 'activite' : 'site';
+    f.autocomplete = state.noSite ? 'off' : 'url';
+    f.inputMode = state.noSite ? 'text' : 'url';
+    f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
+    setText(v.ctaLabel, 'Découvrir mon futur site');
+    f.readOnly = false;
+    const err = mine && state.step === 1 ? state.error : '';
+    setText(v.stepText, err);
     v.stepText.classList.toggle('is-error', Boolean(err));
     if (err) f.setAttribute('aria-invalid', 'true');
     else f.removeAttribute('aria-invalid');
-    v.form.classList.toggle('is-sending', state.sending && mine);
+    v.form.classList.remove('is-sending');
     if (!mine) v.form.classList.remove('is-nudge');
-
-    const wanted = isStep2 ? state.email : state.site;
-    if (f.value !== wanted) f.value = wanted;
+    if (f.value !== state.site) f.value = state.site;
   }
 
   function render() {
@@ -168,6 +151,7 @@
     setText(miniUrl, shownName() || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr'));
     setText(note, noteText(len, lit));
     views.forEach(renderView);
+    renderStep2();
   }
 
   function bounce() {
@@ -210,8 +194,9 @@
     return /^(?:[a-z0-9\u00a1-\uffff](?:[a-z0-9\u00a1-\uffff-]*[a-z0-9\u00a1-\uffff])?\.)+[a-z\u00a1-\uffff]{2,}$/.test(host);
   }
 
-  async function sendRequest(v) {
-    if (v.trap && v.trap.value) return true; // robot : faux succès, rien n’est envoyé (protection anti-robots)
+  async function sendRequest() {
+    const trapValue = [...views, step2].map((x) => (x.trap ? x.trap.value : '')).find(Boolean) || '';
+    if (trapValue) return true; // robot : faux succès, rien n’est envoyé (protection anti-robots)
     if (!endpoint) {
       // Sans adresse d’envoi, rien ne peut être enregistré : on le traite comme un échec.
       console.error('La P’tite Bulle : attribut data-endpoint manquant sur #lp-form, demande non enregistrée.');
@@ -221,9 +206,9 @@
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
       email: state.email.trim(),
-      origine: v === heroView ? 'hero' : 'final',
+      origine: state.originView === heroView ? 'hero' : 'final',
       page: window.location.href,
-      lp_hp: v.trap ? v.trap.value : '',
+      lp_hp: trapValue,
       date: new Date().toISOString()
     };
     const ctrl = 'AbortController' in window ? new AbortController() : null;
@@ -255,8 +240,7 @@
     v.field.addEventListener('input', () => {
       if (state.sending) return;
       state.active = v;
-      if (state.step === 2) state.email = v.field.value;
-      else state.site = v.field.value;
+      state.site = v.field.value;
       if (state.nudge || state.error) {
         state.nudge = false;
         state.error = '';
@@ -278,44 +262,10 @@
           fail(v, 'Cette adresse semble incomplète. Exemple' + NB + ': monsite.fr');
           return;
         }
-        state.step = 2;
-        state.error = '';
-        render();
-        v.field.blur();
-        try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); }
-      } else if (state.step === 2) {
-        if (!/^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim())) {
-          fail(v, 'Cette adresse e-mail semble incomplète.');
-          return;
-        }
-        state.sending = true;
-        state.error = '';
-        render();
-        // Une même demande déjà enregistrée dans cette page n’est pas renvoyée (pas de doublon).
-        const key = [state.noSite ? 'activite' : 'site', state.site.trim().toLowerCase(), state.email.trim().toLowerCase()].join('|');
-        const pause = new Promise((resolve) => setTimeout(resolve, motionOff() ? 0 : 700));
-        const ok = sentKeys.has(key) ? (await pause, true) : (await Promise.all([sendRequest(v), pause]))[0];
-        state.sending = false;
-        if (!ok) {
-          fail(v, 'L’envoi n’a pas abouti. Réessayez dans un instant.');
-          return;
-        }
-        sentKeys.add(key);
-        state.step = 3;
-        render();
-        bounce();
-        openMerci(v);
+        showStep2(v);
       }
     });
 
-    v.edit.addEventListener('click', () => {
-      if (state.sending) return;
-      state.active = v;
-      state.step = 1;
-      state.error = '';
-      render();
-      focusField(v, 20);
-    });
     v.restart.addEventListener('click', () => { reset(v); focusField(v, 20); });
     v.toggle.addEventListener('click', () => {
       state.active = v;
@@ -326,6 +276,146 @@
       focusField(v, 20);
     });
   });
+
+  /* ---------- Second écran : l’e-mail (étape 2 sur 2) ---------- */
+
+  const step2 = {
+    screen: $('#etape-2'),
+    form: $('#e2-form'),
+    box: $('#e2-box'),
+    field: $('#e2-field'),
+    trap: $('#e2-hp'),
+    ctaLabel: $('#e2-cta-label'),
+    msg: $('#e2-msg'),
+    status: $('#e2-status'),
+    site: $('#e2-site'),
+    edit: $('#e2-edit'),
+    bubble: $('#e2-bubble'),
+    miniUrl: $('#e2-mini-url'),
+    announceTimer: 0
+  };
+  let step2Nudge = 0;
+  let step2Palette = null;
+
+  function shownSite() {
+    const t = state.site.trim();
+    return state.noSite ? t : t.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/[\/?#].*$/, '');
+  }
+
+  function renderStep2() {
+    if (!step2.screen) return;
+    setText(step2.site, shownSite() || 'votre-site.fr');
+    setText(step2.miniUrl, shownName() || 'votre-site.fr');
+    const key = shownName().toLowerCase();
+    if (key && key !== step2Palette) {
+      step2Palette = key;
+      paletteFor(key).forEach((c, i) => step2.bubble.style.setProperty('--c' + (i + 1), c));
+    }
+    step2.field.readOnly = state.sending;
+    step2.edit.disabled = state.sending;
+    setText(step2.ctaLabel, state.sending ? 'Enregistrement…' : 'Recevoir mon aperçu gratuit');
+    const err = state.step === 2 ? state.error : '';
+    setText(step2.msg, err);
+    setHidden(step2.msg, !err);
+    if (err) step2.field.setAttribute('aria-invalid', 'true');
+    else step2.field.removeAttribute('aria-invalid');
+    step2.box.classList.toggle('is-sending', state.sending);
+    if (step2.field.value !== state.email) step2.field.value = state.email;
+  }
+
+  function failStep2(message) {
+    clearTimeout(step2Nudge);
+    state.error = message;
+    step2.box.classList.remove('is-nudge');
+    void step2.box.offsetWidth;
+    step2.box.classList.add('is-nudge');
+    const hadFocus = document.activeElement === step2.field;
+    render();
+    if (hadFocus) announce(step2, message);
+    step2.field.focus();
+    step2Nudge = setTimeout(() => step2.box.classList.remove('is-nudge'), 1800);
+  }
+
+  // Défilement immédiat (la page a un défilement doux par défaut).
+  const jumpTo = (y) => { try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, y); } };
+
+  function setScreen(isStep2) {
+    document.documentElement.classList.toggle('is-step2', isStep2);
+    setHidden(step2.screen, !isStep2);
+  }
+
+  // Ouvert par le formulaire du haut comme par celui du bas, une fois l’adresse validée.
+  function showStep2(v) {
+    state.originView = v;
+    state.active = v;
+    state.step = 2;
+    state.error = '';
+    state.scrollY = window.scrollY;
+    $$('dialog.panel[open]').forEach((d) => d.close());
+    try { history.pushState({ lpbStep: 2 }, ''); } catch (e) { /* historique indisponible */ }
+    setScreen(true);
+    render();
+    jumpTo(0);
+    requestAnimationFrame(() => { try { step2.field.focus({ preventScroll: true }); } catch (e) { step2.field.focus(); } });
+    announce(step2, 'Merci' + NNB + '! Votre site entre dans la bulle. Dernière étape, 2 sur 2.');
+  }
+
+  // « Modifier » ou retour arrière du navigateur : retour à l’adresse, rien n’est effacé.
+  function backToStep1() {
+    state.step = 1;
+    state.error = '';
+    setScreen(false);
+    render();
+    const v = state.originView || heroView;
+    jumpTo(state.scrollY || 0);
+    requestAnimationFrame(() => { try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); } });
+  }
+
+  if (step2.screen) {
+    step2.field.addEventListener('input', () => {
+      if (state.sending) return;
+      state.email = step2.field.value;
+      if (state.error) { state.error = ''; step2.box.classList.remove('is-nudge'); }
+      render();
+    });
+    step2.edit.addEventListener('click', () => {
+      if (state.sending) return;
+      if (history.state && history.state.lpbStep === 2) history.back();
+      else backToStep1();
+    });
+    window.addEventListener('popstate', () => { if (state.step === 2 && !state.sending) backToStep1(); });
+    // Rechargement sur le second écran : on repart proprement de la page.
+    if (history.state && history.state.lpbStep === 2) { try { history.replaceState(null, ''); } catch (e) { /* rien */ } }
+
+    step2.form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (state.sending || state.step !== 2) return;
+      if (!/^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim())) {
+        failStep2('Cette adresse e-mail semble incomplète.');
+        return;
+      }
+      state.sending = true;
+      state.error = '';
+      render();
+      // Une même demande déjà enregistrée dans cette page n’est pas renvoyée (le serveur ignore aussi les doublons).
+      const key = [state.noSite ? 'activite' : 'site', state.site.trim().toLowerCase(), state.email.trim().toLowerCase()].join('|');
+      const pause = new Promise((resolve) => setTimeout(resolve, motionOff() ? 0 : 700));
+      const ok = sentKeys.has(key) ? (await pause, true) : (await Promise.all([sendRequest(), pause]))[0];
+      state.sending = false;
+      if (!ok) {
+        failStep2('L’envoi n’a pas abouti. Réessayez dans un instant.');
+        return;
+      }
+      sentKeys.add(key);
+      state.step = 3;
+      try { if (history.state && history.state.lpbStep === 2) history.replaceState(null, ''); } catch (e) { /* rien */ }
+      setScreen(false);
+      render();
+      jumpTo(state.scrollY || 0);
+      bounce();
+      openMerci(state.originView || heroView);
+    });
+  }
 
   const bounceBtn = $('#bubble-bounce');
   if (bounceBtn) bounceBtn.addEventListener('click', bounce);
