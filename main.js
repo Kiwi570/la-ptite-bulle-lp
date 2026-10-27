@@ -56,6 +56,7 @@
   const endpoint = (heroView.form.dataset.endpoint || '').trim();
 
   const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView };
+  const sentKeys = new Set();
   let nudgeTimer = 0;
 
   function announce(view, message) {
@@ -126,7 +127,7 @@
       f.autocomplete = 'email';
       f.inputMode = 'email';
       f.placeholder = 'vous@exemple.fr';
-      setText(v.ctaLabel, state.sending && mine ? 'Envoi…' : 'Recevoir ma maquette');
+      setText(v.ctaLabel, state.sending && mine ? 'Enregistrement…' : 'Recevoir ma maquette');
       defaultStep = 'Étape 2 sur 2 · Aucun paiement, aucun engagement.';
     } else {
       setText(v.label, state.noSite ? 'Votre activité en quelques mots' : 'Votre site actuel');
@@ -230,7 +231,10 @@
         body: JSON.stringify(payload),
         signal: ctrl ? ctrl.signal : undefined
       });
-      return response.ok;
+      if (!response.ok) return false;
+      // Enregistrement confirmé seulement si le serveur répond explicitement { ok: true }.
+      const data = await response.json().catch(() => null);
+      return Boolean(data && data.ok === true);
     } catch (e) {
       return false;
     } finally {
@@ -283,17 +287,20 @@
         state.sending = true;
         state.error = '';
         render();
-        const ok = await sendRequest(v);
+        // Une même demande déjà enregistrée dans cette page n’est pas renvoyée (pas de doublon).
+        const key = [state.noSite ? 'activite' : 'site', state.site.trim().toLowerCase(), state.email.trim().toLowerCase()].join('|');
+        const pause = new Promise((resolve) => setTimeout(resolve, motionOff() ? 0 : 700));
+        const ok = sentKeys.has(key) ? (await pause, true) : (await Promise.all([sendRequest(v), pause]))[0];
         state.sending = false;
         if (!ok) {
           fail(v, 'L’envoi n’a pas abouti. Réessayez dans un instant.');
           return;
         }
+        sentKeys.add(key);
         state.step = 3;
         render();
         bounce();
-        const doneText = v.done.querySelector('.done-text');
-        try { doneText.focus({ preventScroll: true }); } catch (e) { doneText.focus(); }
+        openMerci(v);
       }
     });
 
@@ -763,6 +770,109 @@
   let storedPause = false;
   try { storedPause = localStorage.getItem('lpb-paused') === '1'; } catch (e) { storedPause = false; }
   setPaused(storedPause, false);
+
+  /* ---------- Remerciement plein écran, puis P’tit Kiwi ---------- */
+  // Ouvert uniquement après un enregistrement confirmé (voir l’envoi du formulaire).
+  // Destination fixe, sans aucune donnée ajoutée à l’adresse.
+
+  const MERCI_URL = 'https://www.ptit-kiwi.fr/';
+  const MERCI_SECONDS = 10;
+  const merci = $('#merci');
+  const merciTitle = $('#merci-title');
+  const merciCount = $('#merci-count');
+  const merciStay = $('#merci-stay');
+  const merciGo = $('#merci-go');
+  const merciStatus = $('#merci-status');
+  const merciClose = $('#merci-close');
+  let merciTimer = 0;
+  let merciStartTimer = 0;
+  let merciLeft = 0;
+  let merciLast = 0;
+  let merciStopped = false;
+  let merciLeaving = false;
+  let merciClosing = false;
+  let merciView = heroView;
+
+  const merciText = (n) => 'Vous serez redirigé vers notre site principal dans ' + n + NB + 'seconde' + (n > 1 ? 's' : '') + '.';
+
+  function merciStopTimer() {
+    clearInterval(merciTimer);
+    clearTimeout(merciStartTimer);
+    merciTimer = 0;
+    merciStartTimer = 0;
+  }
+
+  function merciLeave() {
+    if (merciLeaving) return;
+    merciLeaving = true;
+    merciStopTimer();
+    window.location.assign(MERCI_URL);
+  }
+
+  function merciTick() {
+    const now = performance.now();
+    if (!document.hidden) merciLeft -= now - merciLast;
+    merciLast = now;
+    if (merciLeft <= 0) { merciLeave(); return; }
+    setText(merciCount, merciText(Math.ceil(merciLeft / 1000)));
+  }
+
+  function merciRun() {
+    if (merciTimer || merciStopped || merciLeaving || !merci.open || document.hidden) return;
+    merciLast = performance.now();
+    merciTimer = setInterval(merciTick, 200);
+  }
+
+  function openMerci(v) {
+    if (!merci) return;
+    merciView = v;
+    merciStopTimer();
+    merciStopped = false;
+    merciLeaving = false;
+    merciLeft = MERCI_SECONDS * 1000;
+    setText(merciCount, merciText(MERCI_SECONDS));
+    merciStay.hidden = false;
+    merciStatus.textContent = '';
+    $$('dialog[open]').forEach((d) => { if (d !== merci) d.close(); });
+    if (!merci.open) merci.showModal();
+    merci.scrollTop = 0;
+    try { merciTitle.focus({ preventScroll: true }); } catch (e) { merciTitle.focus(); }
+    // Le décompte démarre une fois l’écran affiché (après son apparition).
+    merciStartTimer = setTimeout(merciRun, motionOff() ? 0 : 450);
+  }
+
+  function closeMerciQuietly() {
+    merciStopTimer();
+    merciStopped = true;
+    if (merci.open) { merciClosing = true; merci.close(); }
+    merciLeaving = false;
+    const doneText = merciView.done.querySelector('.done-text');
+    if (!merciView.done.hidden) { try { doneText.focus({ preventScroll: true }); } catch (e) { doneText.focus(); } }
+  }
+
+  if (merci) {
+    merciGo.addEventListener('click', (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      merciLeave();
+    });
+    merciClose.addEventListener('click', merciLeave);
+    // Échap : la fermeture mène aussi vers P’tit Kiwi.
+    merci.addEventListener('cancel', (event) => { event.preventDefault(); merciLeave(); });
+    // L’évènement « close » arrive après coup : on distingue la fermeture voulue (retour arrière) d’une fermeture par Échap.
+    merci.addEventListener('close', () => { if (merciClosing) { merciClosing = false; return; } merciLeave(); });
+    merciStay.addEventListener('click', () => {
+      merciStopped = true;
+      merciStopTimer();
+      setText(merciCount, 'Prenez votre temps. Cliquez sur le bouton lorsque vous souhaitez découvrir P’tit Kiwi.');
+      merciStay.hidden = true;
+      try { merciGo.focus({ preventScroll: true }); } catch (e) { merciGo.focus(); }
+      merciStatus.textContent = 'Redirection automatique annulée.';
+    });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { clearInterval(merciTimer); merciTimer = 0; } else merciRun(); });
+    // Retour arrière depuis P’tit Kiwi (page restaurée telle quelle) : on n’affiche plus l’écran, sans relancer de redirection.
+    window.addEventListener('pageshow', (event) => { if (event.persisted && merci.open) closeMerciQuietly(); });
+  }
 
   /* ---------- Panneaux Avis et FAQ ---------- */
 

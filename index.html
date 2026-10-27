@@ -484,5 +484,34 @@
 </div>
 </div>
 </dialog>
+<dialog id="merci" class="merci" aria-labelledby="merci-title" aria-describedby="merci-desc">
+<div class="merci-bg" aria-hidden="true">
+<span class="merci-glow merci-glow-pink"></span>
+<span class="merci-glow merci-glow-cyan"></span>
+<span class="rise" style="--x:12%;--s:10px;--d:26s;--dl:-6s"></span>
+<span class="rise" style="--x:28%;--s:6px;--d:22s;--dl:-14s"></span>
+<span class="rise" style="--x:72%;--s:12px;--d:30s;--dl:-3s"></span>
+<span class="rise" style="--x:88%;--s:8px;--d:24s;--dl:-17s"></span>
+</div>
+<button type="button" id="merci-close" class="close merci-close" aria-label="Fermer et découvrir P’tit Kiwi" title="Fermer et découvrir P’tit Kiwi"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+<div class="merci-inner">
+<div class="merci-orb" aria-hidden="true"><span class="merci-film"></span><span class="merci-core"></span><span class="merci-shine"></span><span class="merci-check"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4L19 7"/></svg></span></div>
+<h2 id="merci-title" class="merci-title" tabindex="-1">Merci d’avoir choisi<br><span class="merci-iris">l’offre La P’tite Bulle !</span></h2>
+<div id="merci-desc" class="merci-desc">
+<p>Votre demande est bien enregistrée. Notre équipe va imaginer une première version personnalisée et navigable de votre futur site.</p>
+<p class="merci-mail">Vous recevrez votre lien par email sous <strong>24 h ouvrées</strong>.</p>
+<p class="merci-spam">Pensez à vérifier également vos courriers indésirables et l’onglet Promotions pour ne pas manquer notre message.</p>
+</div>
+<div class="merci-next">
+<p class="merci-kiwi">Découvrez maintenant <span class="nowrap">P’tit Kiwi</span>,<br>l’entreprise derrière <span class="nowrap">La P’tite Bulle.</span></p>
+<p id="merci-count" class="merci-count">Vous serez redirigé vers notre site principal dans 10 secondes.</p>
+<div class="merci-actions">
+<a id="merci-go" class="btn btn-pink btn-lg" href="https://www.ptit-kiwi.fr/">Découvrir P’tit Kiwi maintenant<svg class="arrow" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<button type="button" id="merci-stay" class="text-btn merci-stay">Prendre le temps de lire</button>
+</div>
+</div>
+<p id="merci-status" class="sr-only" role="status"></p>
+</div>
+</dialog>
 </body>
 </html>
