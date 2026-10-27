@@ -1078,7 +1078,7 @@ html.is-step2 #offer,html.is-step2 main,html.is-step2 .footer,html.is-step2 .ski
 .e2-site{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .e2-edit{font-size:14.5px;min-height:32px}
 .e2-form{width:100%;margin-top:clamp(4px,1.2vh,12px);text-align:left}
-.e2-q{display:block;margin:0 auto clamp(18px,3vh,30px);max-width:15em;text-align:center;font-weight:800;font-size:clamp(28px,min(3.7vw,5.6vh),50px);line-height:1.07;letter-spacing:-.04em;color:var(--cream);text-wrap:balance}
+.e2-q{display:block;margin:0 auto clamp(8px,1.3vh,12px);max-width:15em;text-align:center;font-weight:800;font-size:clamp(28px,min(3.7vw,5.6vh),50px);line-height:1.07;letter-spacing:-.04em;color:var(--cream);text-wrap:balance}
 .e2-iris{background:linear-gradient(100deg,#F9D7E4 0%,#EF7AA4 22%,#C3B1F7 45%,#7FD4EA 68%,#A8EEDB 84%,#F9D7E4 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:iris-shift 10s linear infinite}
 .e2 .field-wrap{max-width:600px;margin:0 auto}
 .e2-msg{margin:12px 0 0;text-align:center;font-weight:600;font-size:14px;line-height:1.4;color:#F7A8C4}
@@ -1092,6 +1092,20 @@ html.is-step2 #offer,html.is-step2 main,html.is-step2 .footer,html.is-step2 .ski
   .e2-reassure{font-size:13.5px}
 }
 @media (max-height:560px){.e2-bubble{width:84px}.e2-main{align-items:flex-start}}
+
+/* v29 : finitions du second écran */
+.e2-sub{margin:0 auto clamp(16px,2.6vh,26px);max-width:30em;text-align:center;font-weight:500;font-size:clamp(15.5px,1.25vw,18px);line-height:1.5;color:var(--muted);text-wrap:balance}
+/* Moins de mouvement autour du formulaire : dégradé du titre figé, étiquette « gratuit » immobile (la bulle reste animée) */
+.e2-iris{animation:none}
+.e2 .badge-24{animation:none}
+#e2-field{scroll-margin:24px}
+@media (max-width:560px){
+  .e2-top{padding-block:12px}
+  .e2-bubble{width:clamp(78px,12vh,112px)}
+  .e2-card{gap:12px}
+  .e2-q{margin-bottom:8px}
+  .e2-sub{font-size:15px;margin-bottom:16px}
+}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}

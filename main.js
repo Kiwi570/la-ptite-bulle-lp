@@ -390,8 +390,12 @@
     step2.form.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (state.sending || state.step !== 2) return;
+      if (!state.email.trim()) {
+        failStep2('Indiquez votre adresse e-mail.');
+        return;
+      }
       if (!/^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim())) {
-        failStep2('Cette adresse e-mail semble incomplète.');
+        failStep2('Cette adresse e-mail semble incomplète. Exemple' + NB + ': vous@exemple.fr');
         return;
       }
       state.sending = true;
@@ -414,6 +418,23 @@
       jumpTo(state.scrollY || 0);
       bounce();
       openMerci(state.originView || heroView);
+    });
+  }
+
+  // Clavier mobile : quand il s’ouvre et réduit la zone visible, le champ actif reste à l’écran.
+  if (window.visualViewport) {
+    let vvTimer = 0;
+    window.visualViewport.addEventListener('resize', () => {
+      clearTimeout(vvTimer);
+      vvTimer = setTimeout(() => {
+        const el = document.activeElement;
+        if (!el || !/^(lp|fin|e2)-field$/.test(el.id)) return;
+        const vv = window.visualViewport;
+        const r = el.getBoundingClientRect();
+        if (r.top < vv.offsetTop + 8 || r.bottom > vv.offsetTop + vv.height - 8) {
+          try { el.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch (e) { el.scrollIntoView(); }
+        }
+      }, 120);
     });
   }
 
@@ -779,6 +800,7 @@
   function kick() { if (!frame) frame = requestAnimationFrame(loop); }
 
   function onScroll() {
+    if (document.documentElement.classList.contains('is-step2')) return; // page masquée pendant l’étape 2
     const p = measure();
     if (tween) {
       if (Math.abs(p - tween.startP) <= 0.02) return;
@@ -819,7 +841,7 @@
     const fp = clamp((vh - r.top) / (vh * 0.85));
     finalBg.style.setProperty('--fp', fp.toFixed(3));
   }
-  const kickFinal = () => { if (!finalTick) { finalTick = true; requestAnimationFrame(updateFinal); } };
+  const kickFinal = () => { if (document.documentElement.classList.contains('is-step2')) return; if (!finalTick) { finalTick = true; requestAnimationFrame(updateFinal); } };
   window.addEventListener('scroll', kickFinal, { passive: true });
   window.addEventListener('resize', kickFinal);
   updateFinal();
