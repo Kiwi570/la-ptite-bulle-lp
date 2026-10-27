@@ -211,8 +211,12 @@
   }
 
   async function sendRequest(v) {
-    if (v.trap && v.trap.value) return true;
-    if (!endpoint) return true;
+    if (v.trap && v.trap.value) return true; // robot : faux succès, rien n’est envoyé (protection anti-robots)
+    if (!endpoint) {
+      // Sans adresse d’envoi, rien ne peut être enregistré : on le traite comme un échec.
+      console.error('La P’tite Bulle : attribut data-endpoint manquant sur #lp-form, demande non enregistrée.');
+      return false;
+    }
     const payload = {
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
