@@ -3,7 +3,7 @@
 Landing page de La P’tite Bulle, une expérience P’tit Kiwi.
 
 - **Écran 1** : la bulle naît à l’ouverture, suit la souris et prend une palette unique selon l’adresse tapée. Le formulaire se fait en deux temps (adresse ou activité, puis e-mail).
-- **Écran 2** : au défilement, la section se fige et le rouleau repeint un site daté en site moderne.
+- **Écran 2** : au défilement, la section se fige brièvement et le rouleau repeint un site sobre en site plus affirmé, sur le même sujet (exemple illustratif : un fleuriste). Étiquettes « Aujourd’hui » puis « Et demain ? ».
 - **Écran final** : « Prêt à souffler votre bulle ? », avec une bulle géante qui monte au défilement, le même formulaire que la hero (état partagé entre les deux), le délai de la première maquette (« sous 24 h ouvrées », sans heure précise affichée), la date limite des demandes et des bulles d’arguments à faire éclater.
 - **Avis et FAQ** : panneaux natifs (`<dialog>`) qui s’ouvrent par-dessus la page. Le panneau Avis reprend mot pour mot les 30 avis de la fiche partenaire Wix de P’tit Kiwi (https://fr.wix.com/studio/community/partners/kiwix), du plus récent au plus ancien : à mettre à jour à la main quand un nouvel avis est publié (note et nombre d’avis compris).
 
