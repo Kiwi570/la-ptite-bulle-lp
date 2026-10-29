@@ -23,6 +23,7 @@
   const mini = $('#bubble-mini');
   const miniUrl = $('#mini-url');
   const miniBadge = $('#mini-badge');
+  const miniBadgeText = $('#mini-badge-text');
   const tags = $$('.tag');
   const miniBlocks = $$('[data-mini]');
 
@@ -55,7 +56,7 @@
   const heroView = views[0];
   const endpoint = (heroView.form.dataset.endpoint || '').trim();
 
-  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, boing: 0, active: heroView, originView: heroView, scrollY: 0 };
+  const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, warping: false, boing: 0, active: heroView, originView: heroView, scrollY: 0 };
   const sentKeys = new Set();
   let nudgeTimer = 0;
 
@@ -84,6 +85,7 @@
 
   function noteText(len, lit) {
     if (state.step === 3) return 'c’est noté' + NNB + '! maquette en préparation';
+    if (state.warping) return 'la bulle prépare votre aperçu…';
     if (state.nudge && state.active === heroView) {
       if (state.step === 2) return 'il manque une adresse e-mail valide';
       return state.noSite ? 'd’abord quelques mots' + NNB + '!' : 'd’abord l’adresse de votre site';
@@ -124,30 +126,31 @@
     f.inputMode = state.noSite ? 'text' : 'url';
     f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
     setText(v.ctaLabel, 'Découvrir mon futur site');
-    f.readOnly = false;
+    f.readOnly = state.warping && mine;
     const err = mine && state.step === 1 ? state.error : '';
     setText(v.stepText, err);
     v.stepText.classList.toggle('is-error', Boolean(err));
     if (err) f.setAttribute('aria-invalid', 'true');
     else f.removeAttribute('aria-invalid');
-    v.form.classList.remove('is-sending');
+    v.form.classList.toggle('is-sending', state.warping && mine); // passage animé vers l’étape 2 en cours
     if (!mine) v.form.classList.remove('is-nudge');
     if (f.value !== state.site) f.value = state.site;
   }
 
   function render() {
     const len = state.site.trim().length;
-    const lit = state.step > 1 ? 4 : (len === 0 ? 0 : Math.min(4, Math.ceil(len / 3)));
-    const asleep = state.step === 1 && len === 0;
+    const lit = state.step > 1 || state.warping ? 4 : (len === 0 ? 0 : Math.min(4, Math.ceil(len / 3)));
+    const asleep = state.step === 1 && len === 0 && !state.warping;
     const isDone = state.step === 3;
 
-    hero.style.setProperty('--lit', String(isDone ? 4.6 : lit));
+    hero.style.setProperty('--lit', String(isDone || state.warping ? 4.6 : lit));
     schedulePalette(asleep ? '' : shownName());
     tags.forEach((tag, i) => tag.classList.toggle('is-on', lit > i));
     miniBlocks.forEach((el) => el.classList.toggle('is-on', lit >= Number(el.dataset.mini)));
     setHidden(sleep, !asleep);
     setHidden(mini, asleep);
-    setHidden(miniBadge, !isDone);
+    setHidden(miniBadge, !(isDone || state.warping));
+    if (miniBadgeText) setText(miniBadgeText, isDone ? 'demandée' : (state.noSite ? 'activité reçue' : 'adresse reçue'));
     setText(miniUrl, shownName() || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr'));
     setText(note, noteText(len, lit));
     views.forEach(renderView);
@@ -251,7 +254,7 @@
 
     v.form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (state.sending) return;
+      if (state.sending || state.warping) return;
       state.active = v;
       if (state.step === 1) {
         if (!state.site.trim()) {
@@ -262,7 +265,7 @@
           fail(v, 'Cette adresse semble incomplète. Exemple' + NB + ': monsite.fr');
           return;
         }
-        showStep2(v);
+        goToStep2(v);
       }
     });
 
@@ -358,6 +361,69 @@
     jumpTo(0);
     requestAnimationFrame(() => { try { step2.field.focus({ preventScroll: true }); } catch (e) { step2.field.focus(); } });
     announce(step2, 'Merci' + NNB + '! Votre site entre dans la bulle. Dernière étape, 2 sur 2.');
+  }
+
+  // Formulaire du haut : la bulle s’éveille et dessine l’aperçu, puis on « entre » dans la bulle jusqu’à l’étape 2.
+  // Formulaire du bas, animations réduites ou en pause : passage direct, comme avant.
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  async function goToStep2(v) {
+    const bubbleEl = stage ? $('.bubble', stage) : null;
+    if (v !== heroView || motionOff() || !bubbleEl || typeof bubbleEl.animate !== 'function') { showStep2(v); return; }
+    state.warping = true;
+    state.active = v;
+    hero.classList.add('is-prep'); // aperçu vide tant que la bulle n’est pas à l’écran
+    v.field.blur(); // referme le clavier sur mobile
+    render();
+    announce(v, 'La bulle prépare votre aperçu…');
+    try {
+      // Sur mobile, la bulle est sous le formulaire : la page glisse jusqu’à elle.
+      await wait(60);
+      const r = stage.getBoundingClientRect();
+      const top = barPx || 0;
+      if (r.top < top + 8 || r.bottom > window.innerHeight - 8) {
+        const y = window.scrollY + r.top + r.height / 2 - (top + window.innerHeight) / 2;
+        try { window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); } catch (e) { window.scrollTo(0, Math.max(0, y)); }
+        await wait(560);
+      }
+      // L’aperçu se construit bloc par bloc (voir .hero.is-loading dans styles.css).
+      void stage.offsetWidth;
+      hero.classList.remove('is-prep');
+      hero.classList.add('is-loading');
+      await wait(1200);
+      // On entre dans la bulle : son cœur grandit jusqu’à recouvrir l’écran.
+      const b = bubbleEl.getBoundingClientRect();
+      const warp = document.createElement('div');
+      warp.className = 'warp';
+      warp.setAttribute('aria-hidden', 'true');
+      warp.style.left = b.left + 'px';
+      warp.style.top = b.top + 'px';
+      warp.style.width = b.width + 'px';
+      warp.style.height = b.height + 'px';
+      document.body.appendChild(warp);
+      const cx = b.left + b.width / 2;
+      const cy = b.top + b.height / 2;
+      const far = Math.hypot(Math.max(cx, window.innerWidth - cx), Math.max(cy, window.innerHeight - cy));
+      const cover = far / (b.width / 2 * 0.46); // échelle à partir de laquelle le cœur recouvre tout l’écran
+      const zoom = warp.animate([
+        { transform: 'scale(1)', opacity: 0 },
+        { transform: 'scale(1.1)', opacity: 1, offset: 0.14 },
+        { transform: 'scale(' + (cover * 1.6).toFixed(2) + ')', opacity: 1 }
+      ], { duration: 820, easing: 'cubic-bezier(.62,0,.3,1)', fill: 'forwards' });
+      await wait(500); // écran recouvert : le second écran apparaît depuis l’intérieur de la bulle
+      hero.classList.remove('is-loading');
+      state.warping = false;
+      clearTimeout(v.announceTimer);
+      v.status.textContent = '';
+      showStep2(v);
+      warp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, easing: 'ease-out', fill: 'forwards' }).finished
+        .catch(() => {}).then(() => { zoom.cancel(); warp.remove(); });
+    } catch (e) {
+      // En cas d’imprévu, on passe simplement à l’étape 2.
+      hero.classList.remove('is-prep', 'is-loading');
+      $$('.warp').forEach((w) => w.remove());
+      state.warping = false;
+      showStep2(v);
+    }
   }
 
   // « Modifier » ou retour arrière du navigateur : retour à l’adresse, rien n’est effacé.
@@ -900,6 +966,9 @@
   const merciGo = $('#merci-go');
   const merciStatus = $('#merci-status');
   const merciClose = $('#merci-close');
+  const merciDest = $('#merci-dest');
+  const merciNum = $('#merci-num');
+  const merciRing = $('#merci .merci-ring-fg');
   let merciTimer = 0;
   let merciStartTimer = 0;
   let merciLeft = 0;
@@ -909,7 +978,15 @@
   let merciClosing = false;
   let merciView = heroView;
 
-  const merciText = (n) => 'Vous serez redirigé vers notre site principal dans ' + n + NB + 'seconde' + (n > 1 ? 's' : '') + '.';
+  const merciText = (n) => 'Redirection automatique dans ' + n + NB + 'seconde' + (n > 1 ? 's' : '') + '.';
+
+  // Chiffre et anneau du décompte (l’anneau se vide jusqu’à la redirection).
+  function merciShow(ms) {
+    const n = Math.max(1, Math.ceil(ms / 1000));
+    setText(merciCount, merciText(n));
+    if (merciNum) setText(merciNum, String(n));
+    if (merciRing) merciRing.style.strokeDashoffset = (100 - Math.max(0, Math.min(1, ms / (MERCI_SECONDS * 1000))) * 100).toFixed(2);
+  }
 
   function merciStopTimer() {
     clearInterval(merciTimer);
@@ -930,7 +1007,7 @@
     if (!document.hidden) merciLeft -= now - merciLast;
     merciLast = now;
     if (merciLeft <= 0) { merciLeave(); return; }
-    setText(merciCount, merciText(Math.ceil(merciLeft / 1000)));
+    merciShow(merciLeft);
   }
 
   function merciRun() {
@@ -946,7 +1023,8 @@
     merciStopped = false;
     merciLeaving = false;
     merciLeft = MERCI_SECONDS * 1000;
-    setText(merciCount, merciText(MERCI_SECONDS));
+    if (merciDest) merciDest.classList.remove('is-stopped');
+    merciShow(merciLeft);
     merciStay.hidden = false;
     merciStatus.textContent = '';
     $$('dialog[open]').forEach((d) => { if (d !== merci) d.close(); });
@@ -981,6 +1059,7 @@
       merciStopped = true;
       merciStopTimer();
       setText(merciCount, 'Prenez votre temps. Cliquez sur le bouton lorsque vous souhaitez découvrir P’tit Kiwi.');
+      if (merciDest) merciDest.classList.add('is-stopped');
       merciStay.hidden = true;
       try { merciGo.focus({ preventScroll: true }); } catch (e) { merciGo.focus(); }
       merciStatus.textContent = 'Redirection automatique annulée.';
