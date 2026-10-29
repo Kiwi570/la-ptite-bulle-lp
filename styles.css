@@ -1195,6 +1195,13 @@ html.is-step2 #offer,html.is-step2 main,html.is-step2 .footer,html.is-step2 .ski
 .hero.is-loading .mini::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);translate:-120% 0;animation:mini-sweep 1.05s .12s cubic-bezier(.6,0,.3,1) forwards}
 @keyframes mini-sweep{to{translate:120% 0}}
 .warp{position:fixed;z-index:200;border-radius:50%;pointer-events:none;opacity:0;will-change:transform,opacity;background:radial-gradient(circle closest-side,#141931 0%,#151A33 44%,rgba(195,177,247,.9) 56%,rgba(239,122,164,.85) 66%,rgba(127,212,234,.7) 78%,rgba(127,212,234,0) 96%)}
+/* v34 : sceau rond à côté de « Partenaire officiel Wix Legend » (en-tête uniquement ; dessin original, sans logo Wix) */
+.topbar .top-badge{gap:11px}
+.topbar .seal{position:relative;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 34% 28%,#2B3566 0%,#1A2044 55%,#12172F 100%);box-shadow:0 8px 18px -8px rgba(127,212,234,.65),0 0 22px -6px rgba(239,122,164,.45)}
+.topbar .seal-ring{position:absolute;inset:0;border-radius:50%;padding:2px;background:conic-gradient(from 210deg,#7FD4EA,#C3B1F7 22%,#EF7AA4 44%,#F3CF7A 62%,#A8EEDB 80%,#7FD4EA);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:spin 16s linear infinite}
+.topbar .seal-shine{position:absolute;left:18%;top:12%;width:38%;height:22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.55),rgba(255,255,255,0));rotate:-30deg;pointer-events:none}
+.topbar .seal svg{position:relative;width:17px;height:17px;stroke:var(--cyan);stroke-width:2}
+.topbar .seal-star{position:absolute;right:-2px;top:-2px;width:11px;height:11px;background:var(--butter);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 3px rgba(243,207,122,.8));animation:promise-twinkle 3.6s ease-in-out 1s infinite}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
