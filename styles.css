@@ -1358,6 +1358,9 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 .e2 .e2-after.has-suggest .e2-proof{opacity:0;visibility:hidden;transition:opacity .15s ease,visibility 0s linear .15s}
 .e2 .e2-after.has-suggest .e2-suggest > span{animation:e2-suggest-in .3s ease both}
 @keyframes e2-suggest-in{from{opacity:0;translate:0 -4px}to{opacity:1;translate:0 0}}
+.e2 .e2-intro{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}
+.e2 .e2-start{margin:0;max-width:38em;font-weight:500;font-size:clamp(15px,1.15vw,17px);line-height:1.45;color:var(--muted);text-wrap:balance}
+@media (max-height:780px){.e2 .e2-intro{gap:3px}.e2 .e2-start{font-size:14.5px}}
 .e2 .e2-reassure{flex-direction:row;align-items:flex-start;justify-content:center;gap:8px;max-width:38em;margin:0 auto;text-align:left;font-size:13.5px}
 .e2 .e2-reassure svg{margin-top:1px;stroke-width:2}
 @media (max-width:480px){
@@ -1365,6 +1368,7 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
   .e2 .e2-site{max-width:34vw}
   .e2 .e2-stepper .e2-edit{font-size:12px}
   .e2 .e2-proof{font-size:13px}
+  .e2 .e2-start{font-size:14.5px}
   .e2 .e2-reassure{font-size:12.5px}
 }
 @media (prefers-reduced-motion:reduce){

@@ -414,7 +414,7 @@
     render();
     jumpTo(0);
     requestAnimationFrame(() => { try { step2.field.focus({ preventScroll: true }); } catch (e) { step2.field.focus(); } });
-    announce(step2, 'Merci' + NNB + '! Votre site entre dans la bulle. Dernière étape, 2 sur 2.');
+    announce(step2, 'Merci' + NNB + '! Votre site entre dans la bulle. Nous commençons dès maintenant la maquette de votre nouveau site. Dernière étape, 2 sur 2.');
   }
 
   // Formulaire du haut : une jauge se remplit, la bulle gonfle et dessine l’aperçu, puis elle éclate et l’étape 2 s’ouvre.
