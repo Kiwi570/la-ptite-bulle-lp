@@ -774,7 +774,7 @@
     const painted = p >= 0.985;
     const finished = p >= 0.995;
     if (painted !== flags.painted) { flags.painted = painted; s2.classList.toggle('is-painted', painted); }
-    if (finished !== flags.finished) { flags.finished = finished; s2.classList.toggle('is-finished', finished); }
+    if (finished !== flags.finished) { flags.finished = finished; s2.classList.toggle('is-finished', finished); scheduleAuto(); }
     steps.forEach((step, i) => {
       const on = p > thresholds[i];
       if (on !== flags.steps[i]) { flags.steps[i] = on; step.classList.toggle('is-on', on); }
@@ -795,6 +795,7 @@
     }
     apply(current);
     if (tween || Math.abs(target - current) > 0.0006) frame = requestAnimationFrame(loop);
+    else scheduleAuto(); // rouleau à l’arrêt : relance l’attente du métier suivant
   }
 
   function kick() { if (!frame) frame = requestAnimationFrame(loop); }
@@ -815,25 +816,53 @@
     kick();
   }
 
-  // Métiers d’exemple : chaque « Encore un coup de rouleau » repeint la maquette pour un autre métier.
+  // Métiers d’exemple : un métier au hasard à chaque visite, puis le suivant à chaque coup de rouleau.
   const TRADES = [['fleuriste', 'Fleuriste'], ['restaurant', 'Restaurant'], ['coach', 'Coach sportif'], ['artisan', 'Artisan']];
   const tradeName = $('#s2-trade');
+  const tradeCaption = tradeName ? tradeName.parentElement : null;
   let tradeIndex = 0;
-  function nextTrade() {
-    tradeIndex = (tradeIndex + 1) % TRADES.length;
+  function setTrade(i) {
+    tradeIndex = (i + TRADES.length) % TRADES.length;
     frameEl.dataset.trade = TRADES[tradeIndex][0];
     if (tradeName) tradeName.textContent = TRADES[tradeIndex][1];
   }
+  setTrade(Math.floor(Math.random() * TRADES.length));
 
-  const replayBtn = $('#replay');
-  if (replayBtn) replayBtn.addEventListener('click', () => {
-    nextTrade();
+  function repaint(manual) {
+    // Changement annoncé aux lecteurs d’écran seulement après un clic, pas lors du défilement automatique.
+    if (tradeCaption) tradeCaption.setAttribute('aria-live', manual ? 'polite' : 'off');
+    setTrade(tradeIndex + 1);
     current = 0;
     apply(0); // l’ancien site du nouveau métier s’affiche aussitôt, avant le passage du rouleau
     hold = null;
     tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200, startP: measure() };
     kick();
-  });
+  }
+
+  const replayBtn = $('#replay');
+  if (replayBtn) replayBtn.addEventListener('click', () => repaint(true));
+
+  // Défilement automatique : maquette repeinte et visible, le rouleau repasse avec le métier suivant.
+  // Arrêté par le bouton Pause, la réduction des animations, l’étape 2, un onglet caché ou une maquette hors écran.
+  const AUTO_MS = 4500;
+  let autoTimer = 0;
+  let frameVisible = false;
+  function autoAllowed() {
+    return frameVisible && flags.finished === true && !tween && !motionOff() && !document.hidden && !document.documentElement.classList.contains('is-step2');
+  }
+  function scheduleAuto() {
+    clearTimeout(autoTimer);
+    autoTimer = 0;
+    if (autoAllowed()) autoTimer = setTimeout(() => { autoTimer = 0; if (autoAllowed()) repaint(false); }, AUTO_MS);
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      frameVisible = entries[entries.length - 1].isIntersecting;
+      scheduleAuto();
+    }, { threshold: 0.6 }).observe(frameEl);
+  }
+  document.addEventListener('visibilitychange', scheduleAuto);
+  if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', scheduleAuto);
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
@@ -894,6 +923,7 @@
     if (on) { tilt.tx = 0; tilt.ty = 0; pointer = null; kickTilt(); }
     kickFinal();
     if (save) { try { localStorage.setItem('lpb-paused', on ? '1' : '0'); } catch (e) { /* stockage indisponible */ } }
+    scheduleAuto();
   }
   motionBtn.addEventListener('click', () => setPaused(!document.documentElement.classList.contains('is-paused'), true));
   let storedPause = false;
