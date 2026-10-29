@@ -1231,6 +1231,38 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 .topbar .seal-shine{position:absolute;left:18%;top:12%;width:38%;height:22%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.55),rgba(255,255,255,0));rotate:-30deg;pointer-events:none}
 .topbar .seal svg{position:relative;width:17px;height:17px;stroke:var(--cyan);stroke-width:2}
 .topbar .seal-star{position:absolute;right:-2px;top:-2px;width:11px;height:11px;background:var(--butter);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 3px rgba(243,207,122,.8));animation:promise-twinkle 3.6s ease-in-out 1s infinite}
+/* v35 : second écran plus vivant (messages, bulle qui réagit à l’e-mail, « Et ensuite ? ») — règles limitées à .e2 */
+.e2 .e2-bg .rise{opacity:.5}
+.e2 .e2-bubble{animation:wobble 9s ease-in-out infinite,e2-float 6s ease-in-out infinite;transition:--c1 .9s ease,--c2 .9s ease,--c3 .9s ease,--c4 .9s ease,--c5 .9s ease,box-shadow .5s ease,scale .5s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes e2-float{0%,100%{translate:0 0}50%{translate:0 -6px}}
+.e2 .e2-bubble.is-ready{scale:1.06;box-shadow:0 0 0 1px rgba(246,241,231,.24),0 0 70px rgba(239,122,164,.5),0 0 130px rgba(127,212,234,.3)}
+.e2 .e2-mail-badge{position:absolute;right:13%;bottom:13%;z-index:2;width:30%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:var(--pink);box-shadow:0 6px 14px -4px rgba(0,0,0,.55),0 0 0 3px rgba(20,26,59,.85);opacity:0;scale:.2;rotate:-25deg;transition:opacity .25s ease,scale .5s cubic-bezier(.2,.9,.3,1.6),rotate .5s cubic-bezier(.2,.9,.3,1.4)}
+.e2 .e2-mail-badge svg{width:56%;height:56%;fill:none;stroke:var(--navy);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.e2 .e2-bubble.is-ready .e2-mail-badge{opacity:1;scale:1;rotate:0deg}
+.e2 .e2-bubble.is-sending .e2-mail-badge{animation:mail-fly .9s cubic-bezier(.5,0,.3,1) infinite}
+@keyframes mail-fly{0%{translate:0 0}45%{translate:-90% -120%;scale:.75}46%{opacity:0}54%{translate:40% 60%;opacity:0}55%{opacity:1}100%{translate:0 0}}
+.e2 .e2-next{margin:-6px 0 0;max-width:31em;font-weight:500;font-size:clamp(15px,1.15vw,17px);line-height:1.5;color:var(--muted);text-wrap:balance}
+.e2 .e2-next-hl{color:var(--cream);font-weight:700;white-space:nowrap;background:linear-gradient(transparent 60%,rgba(239,122,164,.4) 60%,rgba(239,122,164,.4) 92%,transparent 92%);padding:0 .1em}
+.e2 .e2-sub strong{color:var(--cyan);font-weight:800}
+.e2 .field.is-valid{box-shadow:0 0 0 2px rgba(127,212,234,.55),0 18px 40px -18px rgba(127,212,234,.45)}
+.e2 .field.is-valid .btn-field .arrow{animation:arrow-nudge 1.1s ease-in-out infinite}
+@keyframes arrow-nudge{0%,100%{translate:0 0}50%{translate:4px 0}}
+.e2 .e2-progress{letter-spacing:0;text-transform:none}
+.e2 .e2-stepper{display:flex;align-items:center;gap:8px}
+.e2 .e2-st{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13px;line-height:1;letter-spacing:0;color:var(--muted-2);white-space:nowrap}
+.e2 .e2-st i{width:24px;height:24px;flex:none;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:12px;color:var(--muted);background:rgba(246,241,231,.06);border:1px solid rgba(246,241,231,.18)}
+.e2 .e2-st svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.e2 .e2-st.is-done{color:var(--cyan)}
+.e2 .e2-st.is-done i{background:var(--cyan);border-color:var(--cyan);color:var(--navy)}
+.e2 .e2-st.is-on{color:var(--cream)}
+.e2 .e2-st.is-on i{background:var(--pink);border-color:var(--pink);color:var(--navy);box-shadow:0 0 0 4px rgba(239,122,164,.18),0 0 16px rgba(239,122,164,.6);animation:st-pulse 2.4s ease-in-out infinite}
+@keyframes st-pulse{0%,100%{box-shadow:0 0 0 4px rgba(239,122,164,.18),0 0 16px rgba(239,122,164,.55)}50%{box-shadow:0 0 0 7px rgba(239,122,164,.08),0 0 22px rgba(239,122,164,.75)}}
+.e2 .e2-st.is-next i{color:var(--butter)}
+.e2 .e2-st.is-next svg{stroke-width:1.8;fill:rgba(243,207,122,.25)}
+.e2 .e2-st-line{width:26px;height:2px;border-radius:2px;background:rgba(246,241,231,.16)}
+.e2 .e2-st-line.is-done{background:linear-gradient(90deg,var(--cyan),var(--pink))}
+@media (max-height:780px){.e2 .e2-card{gap:clamp(8px,1.4vh,12px)}.e2 .e2-bubble{width:clamp(76px,11vh,100px)}.e2 .e2-next{margin-top:-4px;font-size:14.5px;line-height:1.45}.e2 .e2-sub{margin-bottom:12px}}
+@media (max-width:400px){.e2 .e2-stepper{gap:6px}.e2 .e2-st{font-size:12px;gap:5px}.e2 .e2-st i{width:22px;height:22px}.e2 .e2-st-line{width:12px}}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}

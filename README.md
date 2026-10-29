@@ -36,6 +36,7 @@ Facultatif : pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-M
 ## Enregistrement des contacts (Vercel + Upstash Redis)
 
 - `api/lead.js` reçoit chaque demande, vérifie l’adresse et l’e-mail, écarte les robots (champ piège, envois depuis un autre site, 8 demandes maximum par IP et par heure) et l’ajoute à la liste Redis `lpb:leads` (format inchangé : `id`, `date`, `site`, `email`, `type`, `origine`, `page`). Anti-doublon côté serveur : une même demande (type + site + e-mail, sans tenir compte de `https://`, `www.` ni des majuscules) n’est ajoutée qu’une fois sur 7 jours, grâce à une clé `lpb:doublon:…` écrite en même temps que la demande (script Redis atomique, avec repli si les scripts sont indisponibles). Si la réponse se perd et que le visiteur réessaie, le serveur répond `{ ok: true }` sans rien ajouter.
+- **Deux temps, une seule demande** : dès que le visiteur valide l’adresse de son site (formulaire du haut ou du bas), la page envoie `{ etape: 'site', ref }` et la demande apparaît tout de suite dans `lpb:leads`, avec un e-mail vide (« e-mail en attente » sur la page Contacts). À l’étape 2, `{ etape: 'email', ref }` complète **la même ligne** (même `id`, même `date`) avec l’e-mail. `ref` est un identifiant de visite tiré au hasard et gardé en mémoire dans la page (rien n’est stocké dans le navigateur) ; côté serveur, la clé `lpb:visite:…` (7 jours) relie la visite à sa ligne. Si l’adresse est modifiée avant l’e-mail, la même ligne est mise à jour. Si la même demande (site + e-mail) existe déjà, la ligne en attente est retirée au lieu de créer un doublon. Sans `ref` (ancien format), une demande complète est créée comme avant. Limites : 8 nouvelles demandes par IP et par heure (étape 1 ou demande complète directe) et 8 ajouts d’e-mail. Champ piège rempli au second écran : faux succès et la ligne en attente de la visite est retirée.
 - `api/leads.js` affiche les contacts, protégés par mot de passe : `https://la-ptite-bulle-lp.vercel.app/api/leads` (identifiant au choix, mot de passe = `ADMIN_PASSWORD`). Bouton « Télécharger en CSV » pour Excel, Numbers ou Google Sheets.
 
 Mise en place (une seule fois, avant de déployer ce code) :
@@ -43,4 +44,4 @@ Mise en place (une seule fois, avant de déployer ce code) :
 2. **Settings → Environment Variables** : ajouter `ADMIN_PASSWORD` (un mot de passe long).
 3. Déployer (git push). Les variables ne s’appliquent qu’aux nouveaux déploiements.
 
-Supprimer un contact (droit à l’effacement) : console Upstash → Data Browser → clé `lpb:leads`.
+Supprimer un contact (droit à l’effacement) : console Upstash → Data Browser → clé `lpb:leads` (la clé `lpb:visite:…` correspondante expire seule au bout de 7 jours).

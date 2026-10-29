@@ -59,10 +59,11 @@ module.exports = async (req, res) => {
     return res.status(200).send(csv);
   }
 
+  const pending = leads.filter((l) => !l.email).length;
   const rows = leads.map((l) => {
     const href = siteHref(l);
     const site = href ? '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(l.site) + '</a>' : escapeHtml(l.site);
-    return '<tr><td>' + escapeHtml(dateFmt.format(new Date(l.date))) + '</td><td>' + site + '</td><td><a href="mailto:' + escapeHtml(l.email) + '">' + escapeHtml(l.email) + '</a></td><td>' + (l.type === 'site' ? 'Site' : 'Activité') + '</td><td>' + (l.origine === 'final' ? 'Bas de page' : 'Haut de page') + '</td></tr>';
+    return '<tr><td>' + escapeHtml(dateFmt.format(new Date(l.date))) + '</td><td>' + site + '</td><td>' + (l.email ? '<a href="mailto:' + escapeHtml(l.email) + '">' + escapeHtml(l.email) + '</a>' : '<span class="wait">e-mail en attente</span>') + '</td><td>' + (l.type === 'site' ? 'Site' : 'Activité') + '</td><td>' + (l.origine === 'final' ? 'Bas de page' : 'Haut de page') + '</td></tr>';
   }).join('');
 
   const html = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>Contacts · La P’tite Bulle</title><style>'
@@ -73,7 +74,8 @@ module.exports = async (req, res) => {
     + '.wrap{overflow-x:auto;border:1px solid rgba(246,241,231,.12);border-radius:16px}table{width:100%;border-collapse:collapse;min-width:640px}'
     + 'th,td{padding:12px 14px;text-align:left;border-bottom:1px solid rgba(246,241,231,.08);vertical-align:top}th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7FD4EA;background:#151A33}'
     + 'tr:last-child td{border-bottom:0}td a{color:#F6F1E7}.empty{padding:40px 16px;text-align:center;color:#B9BED3}'
-    + '</style></head><body><main><div class="top"><div><h1>Contacts</h1><p>' + leads.length + ' demande' + (leads.length > 1 ? 's' : '') + ' de maquette, de la plus récente à la plus ancienne.</p></div>'
+    + '.wait{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(243,207,122,.14);color:#F3CF7A;font-size:13px;font-weight:600}'
+    + '</style></head><body><main><div class="top"><div><h1>Contacts</h1><p>' + leads.length + ' demande' + (leads.length > 1 ? 's' : '') + ' de maquette, de la plus récente à la plus ancienne' + (pending ? ', dont ' + pending + ' en attente d’e-mail' : '') + '.</p></div>'
     + '<a class="btn" href="?format=csv">Télécharger en CSV</a></div><div class="wrap">'
     + (leads.length ? '<table><thead><tr><th>Date (Paris)</th><th>Site ou activité</th><th>E-mail</th><th>Type</th><th>Formulaire</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p class="empty">Aucune demande pour le moment.</p>')
     + '</div></main></body></html>';

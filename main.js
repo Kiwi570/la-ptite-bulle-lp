@@ -58,6 +58,16 @@
 
   const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, warping: false, boing: 0, active: heroView, originView: heroView, scrollY: 0 };
   const sentKeys = new Set();
+
+  // Identifiant de la visite (en mémoire seulement) : relie l’adresse enregistrée à l’étape 1 et l’e-mail de l’étape 2.
+  function newVisitRef() {
+    const bytes = new Uint8Array(12);
+    if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(bytes);
+    else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  }
+  let visitRef = newVisitRef();
+  let sitePending = null;
   let nudgeTimer = 0;
 
   function announce(view, message) {
@@ -197,15 +207,50 @@
     return /^(?:[a-z0-9\u00a1-\uffff](?:[a-z0-9\u00a1-\uffff-]*[a-z0-9\u00a1-\uffff])?\.)+[a-z\u00a1-\uffff]{2,}$/.test(host);
   }
 
+  // Étape 1 : l’adresse du site est enregistrée dès sa validation (demande « e-mail en attente » dans le Studio).
+  // L’envoi se fait en arrière-plan : la suite du parcours n’attend pas la réponse.
+  function saveSite(v) {
+    const trapValue = [...views, step2].map((x) => (x.trap ? x.trap.value : '')).find(Boolean) || '';
+    if (trapValue || !endpoint) { sitePending = null; return; }
+    const payload = {
+      etape: 'site',
+      ref: visitRef,
+      type: state.noSite ? 'activite' : 'site',
+      site: state.site.trim(),
+      origine: v === heroView ? 'hero' : 'final',
+      page: window.location.href,
+      lp_hp: ''
+    };
+    const ctrl = 'AbortController' in window ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : 0;
+    sitePending = fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(payload),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then((r) => (r.ok ? r.json().catch(() => null) : null)).then((d) => Boolean(d && d.ok === true))
+      .catch(() => false).finally(() => clearTimeout(timer));
+  }
+
   async function sendRequest() {
     const trapValue = [...views, step2].map((x) => (x.trap ? x.trap.value : '')).find(Boolean) || '';
-    if (trapValue) return true; // robot : faux succès, rien n’est envoyé (protection anti-robots)
+    if (trapValue) {
+      // Robot : faux succès. Si l’adresse est déjà partie à l’étape 1, le serveur la retire.
+      if (sitePending && endpoint) {
+        fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ etape: 'email', ref: visitRef, lp_hp: trapValue }) }).catch(() => {});
+      }
+      return true;
+    }
     if (!endpoint) {
       // Sans adresse d’envoi, rien ne peut être enregistré : on le traite comme un échec.
       console.error('La P’tite Bulle : attribut data-endpoint manquant sur #lp-form, demande non enregistrée.');
       return false;
     }
+    // L’adresse de l’étape 1 part en premier : on laisse à son envoi le temps d’aboutir (4 s au plus).
+    if (sitePending) await Promise.race([sitePending, new Promise((resolve) => setTimeout(resolve, 4000))]);
     const payload = {
+      etape: 'email',
+      ref: visitRef,
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
       email: state.email.trim(),
@@ -235,6 +280,8 @@
   }
 
   function reset(v) {
+    visitRef = newVisitRef(); // nouvelle demande : nouvelle visite
+    sitePending = null;
     Object.assign(state, { step: 1, site: '', email: '', nudge: false, error: '', active: v });
     render();
   }
@@ -265,6 +312,7 @@
           fail(v, 'Cette adresse semble incomplète. Exemple' + NB + ': monsite.fr');
           return;
         }
+        saveSite(v);
         goToStep2(v);
       }
     });
@@ -323,6 +371,11 @@
     if (err) step2.field.setAttribute('aria-invalid', 'true');
     else step2.field.removeAttribute('aria-invalid');
     step2.box.classList.toggle('is-sending', state.sending);
+    // E-mail complet : la bulle s’illumine et une enveloppe apparaît, prête à partir.
+    const ready = /^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim());
+    step2.bubble.classList.toggle('is-ready', ready);
+    step2.bubble.classList.toggle('is-sending', state.sending);
+    step2.box.classList.toggle('is-valid', ready && !state.sending);
     if (step2.field.value !== state.email) step2.field.value = state.email;
   }
 
