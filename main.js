@@ -815,8 +815,21 @@
     kick();
   }
 
+  // Métiers d’exemple : chaque « Encore un coup de rouleau » repeint la maquette pour un autre métier.
+  const TRADES = [['fleuriste', 'Fleuriste'], ['restaurant', 'Restaurant'], ['coach', 'Coach sportif'], ['artisan', 'Artisan']];
+  const tradeName = $('#s2-trade');
+  let tradeIndex = 0;
+  function nextTrade() {
+    tradeIndex = (tradeIndex + 1) % TRADES.length;
+    frameEl.dataset.trade = TRADES[tradeIndex][0];
+    if (tradeName) tradeName.textContent = TRADES[tradeIndex][1];
+  }
+
   const replayBtn = $('#replay');
   if (replayBtn) replayBtn.addEventListener('click', () => {
+    nextTrade();
+    current = 0;
+    apply(0); // l’ancien site du nouveau métier s’affiche aussitôt, avant le passage du rouleau
     hold = null;
     tween = { from: 0, to: 1, t0: performance.now(), ms: reduceMotion.matches ? 1 : 4200, startP: measure() };
     kick();
