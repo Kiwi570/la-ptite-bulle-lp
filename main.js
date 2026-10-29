@@ -1069,15 +1069,18 @@
 
   const finalSection = $('#final');
   const finalBg = $('.final-bg', finalSection);
+  const finalOrb = $('.final-orb', finalSection);
+  const finalBody = $('.fb-body', finalSection);
+  const setFp = (v) => [finalBg, finalOrb].forEach((el) => { if (el) el.style.setProperty('--fp', v); });
   let finalTick = false;
   function updateFinal() {
     finalTick = false;
-    if (motionOff()) { finalBg.style.setProperty('--fp', '1'); return; }
+    if (motionOff()) { setFp('1'); return; }
     const r = finalSection.getBoundingClientRect();
     const vh = window.innerHeight || 800;
     if (r.top > vh * 1.2 || r.bottom < -100) return;
     const fp = clamp((vh - r.top) / (vh * 0.85));
-    finalBg.style.setProperty('--fp', fp.toFixed(3));
+    setFp(fp.toFixed(3));
   }
   const kickFinal = () => { if (document.documentElement.classList.contains('is-step2')) return; if (!finalTick) { finalTick = true; requestAnimationFrame(updateFinal); } };
   window.addEventListener('scroll', kickFinal, { passive: true });
@@ -1085,8 +1088,26 @@
   updateFinal();
 
   $$('.pop', finalSection).forEach((pop) => {
-    pop.addEventListener('click', () => pop.classList.add('is-popped'), { once: true });
+    pop.addEventListener('click', () => {
+      pop.classList.add('is-popped');
+      // La grande bulle frémit quand on en éclate une petite.
+      if (finalBody && !motionOff()) { finalBody.classList.remove('is-shiver'); void finalBody.offsetWidth; finalBody.classList.add('is-shiver'); }
+    }, { once: true });
   });
+
+  if (finalBody) finalBody.addEventListener('animationend', () => finalBody.classList.remove('is-shiver'));
+  // Les reflets suivent légèrement la souris (souris uniquement, pas en animations réduites ni en pause).
+  let orbTick = 0;
+  let orbXY = [0, 0];
+  if (finalOrb) {
+    finalSection.addEventListener('pointermove', (event) => {
+      if (!finePointer.matches || motionOff() || event.pointerType !== 'mouse') return;
+      const r = finalOrb.getBoundingClientRect();
+      orbXY = [Math.max(-1, Math.min(1, (event.clientX - (r.left + r.width / 2)) / (r.width / 2))), Math.max(-1, Math.min(1, (event.clientY - (r.top + r.height / 2)) / (r.height / 2)))];
+      if (!orbTick) orbTick = requestAnimationFrame(() => { orbTick = 0; finalOrb.style.setProperty('--mx', orbXY[0].toFixed(3)); finalOrb.style.setProperty('--my', orbXY[1].toFixed(3)); });
+    });
+    finalSection.addEventListener('pointerleave', () => { finalOrb.style.setProperty('--mx', '0'); finalOrb.style.setProperty('--my', '0'); });
+  }
 
   if ('IntersectionObserver' in window) {
     const revealer = new IntersectionObserver((entries) => {
