@@ -29,7 +29,7 @@ Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour.
 
 ## Date de fin
 
-La clôture des demandes (« Offre limitée à 250 clients Wix · Demandes jusqu’au mercredi 28 octobre 2026 à 23 h 59, heure de Paris ») est écrite en texte fixe dans `index.html` : bandeau d’offre (versions longue et courtes), note sous le formulaire final, FAQ « Qui peut en profiter ? » et texte pour lecteurs d’écran du bandeau. Pour changer la date, modifiez ces quatre endroits. Aucun compte à rebours n’est actif et rien ne change automatiquement à l’échéance.
+La clôture des demandes (« Offre limitée à 250 clients Wix · Demandes jusqu’au jeudi 29 octobre 2026 à 23 h 59, heure de Paris ») est écrite en texte fixe dans `index.html` : bandeau d’offre (versions longue et courtes), note sous le formulaire final, FAQ « Qui peut en profiter ? » et texte pour lecteurs d’écran du bandeau. Pour changer la date, modifiez ces quatre endroits. Aucun compte à rebours n’est actif et rien ne change automatiquement à l’échéance.
 
 Facultatif : pour remettre un compte à rebours réel, ajoutez `data-end="AAAA-MM-JJTHH:MM:SSZ"` (heure UTC) sur `<div id="offer">` et rétablissez le minuteur dans le bandeau : à l’échéance, la page passe en mode « offre terminée ».
 
