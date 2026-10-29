@@ -1425,7 +1425,7 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 }
 @media (min-width:561px) and (max-width:1079px){#final{padding-top:124px;padding-bottom:116px}}
 @media (max-width:1079px){.final .tb-more{display:none}.final .fb-shine{left:1%;top:23%}.final .final-quote{margin-top:clamp(14px,2.4vh,24px)}}
-/* v42 : retour à la grande bulle douce (v39), sans avis ni seconde ligne d’offre ; la bulle frémit quand on éclate une petite, ses reflets suivent un peu la souris */
+/* v42 : retour à la grande bulle douce (v39), sans avis, sans seconde ligne d’offre ni bulles d’arguments ; ses reflets suivent un peu la souris */
 .final .final-bubble{overflow:visible}
 .fb-body{position:absolute;inset:0;border-radius:50%}
 .fb-body.is-shiver{animation:fb-shiver .75s cubic-bezier(.3,.7,.4,1)}
@@ -1436,7 +1436,7 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 .final .final-card{gap:14px}
 .final .eta{margin-top:6px}
 .final .final-trust{margin-top:clamp(32px,5vh,56px)}
-@media (min-width:1080px){.final .final-zone{min-height:210px}}
+@media (min-width:1080px){.final .final-zone{min-height:0}}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
