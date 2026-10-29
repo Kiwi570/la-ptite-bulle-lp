@@ -363,12 +363,64 @@
     announce(step2, 'Merci' + NNB + '! Votre site entre dans la bulle. Dernière étape, 2 sur 2.');
   }
 
-  // Formulaire du haut : la bulle s’éveille et dessine l’aperçu, puis on « entre » dans la bulle jusqu’à l’étape 2.
+  // Formulaire du haut : une jauge se remplit, la bulle gonfle et dessine l’aperçu, puis elle éclate et l’étape 2 s’ouvre.
   // Formulaire du bas, animations réduites ou en pause : passage direct, comme avant.
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const gauge = $('#bubble-gauge');
+  const gaugeLabel = $('#gauge-label');
+  const gaugePct = $('#gauge-pct');
+  const gaugeFill = $('#gauge-fill');
+  const GAUGE_STEPS = [[0.3, 'La bulle se remplit…'], [0.62, 'Elle prend des couleurs…'], [0.93, 'L’aperçu se dessine…'], [1.01, 'Prête à éclater' + NNB + '!']];
+
+  // Remplissage de la jauge : rapide au début, puis plus posé avant l’éclatement.
+  function runGauge(ms) {
+    return new Promise((resolve) => {
+      const t0 = performance.now();
+      const ease = (t) => (t < 0.55 ? 0.7 * (1 - Math.pow(1 - t / 0.55, 3)) : 0.7 + 0.3 * (1 - Math.pow(1 - (t - 0.55) / 0.45, 2)));
+      function step(now) {
+        const t = Math.min(1, (now - t0) / ms);
+        const p = t >= 1 ? 1 : ease(t);
+        gaugeFill.style.setProperty('--p', p.toFixed(3));
+        setText(gaugePct, Math.round(p * 100) + NNB + '%');
+        setText(gaugeLabel, GAUGE_STEPS.find((g) => p < g[0])[1]);
+        hero.style.setProperty('--swell', p.toFixed(3));
+        hero.classList.toggle('is-tense', p > 0.9 && t < 1);
+        if (t < 1) requestAnimationFrame(step); else resolve();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Éclatement : flash, onde et gouttelettes irisées autour de la bulle.
+  function burst() {
+    const colors = ['#7FD4EA', '#C3B1F7', '#EF7AA4', '#F3CF7A', '#A8EEDB', '#F9D7E4'];
+    const el = document.createElement('div');
+    el.className = 'burst';
+    el.setAttribute('aria-hidden', 'true');
+    let html = '<span class="burst-flash"></span><span class="burst-ring"></span>';
+    const n = 26;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+      const d = 55 + Math.random() * 55;
+      const size = i % 3 === 0 ? 6 + Math.random() * 5 : 11 + Math.random() * 12;
+      html += '<span class="drop" style="--dx:' + (Math.cos(a) * d).toFixed(1) + 'cqw;--dy:' + (Math.sin(a) * d).toFixed(1) + 'cqw;--s:' + size.toFixed(1) + 'px;--c:' + colors[i % colors.length] + ';--dl:' + Math.round(Math.random() * 70) + 'ms"></span>';
+    }
+    el.innerHTML = html;
+    stage.appendChild(el);
+    return el;
+  }
+
+  function resetLoading() {
+    hero.classList.remove('is-prep', 'is-loading', 'is-tense', 'is-popping');
+    hero.style.removeProperty('--swell');
+    if (gauge) setHidden(gauge, true);
+    $$('.burst', stage).forEach((b) => b.remove());
+    document.documentElement.classList.remove('is-leaving');
+  }
+
   async function goToStep2(v) {
     const bubbleEl = stage ? $('.bubble', stage) : null;
-    if (v !== heroView || motionOff() || !bubbleEl || typeof bubbleEl.animate !== 'function') { showStep2(v); return; }
+    if (v !== heroView || motionOff() || !bubbleEl || !gauge) { showStep2(v); return; }
     state.warping = true;
     state.active = v;
     hero.classList.add('is-prep'); // aperçu vide tant que la bulle n’est pas à l’écran
@@ -380,48 +432,37 @@
       await wait(60);
       const r = stage.getBoundingClientRect();
       const top = barPx || 0;
-      if (r.top < top + 8 || r.bottom > window.innerHeight - 8) {
-        const y = window.scrollY + r.top + r.height / 2 - (top + window.innerHeight) / 2;
+      const room = r.height + 110; // bulle + jauge
+      if (r.top < top + 8 || r.top + room > window.innerHeight - 8) {
+        const y = window.scrollY + r.top + room / 2 - (top + window.innerHeight) / 2;
         try { window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); } catch (e) { window.scrollTo(0, Math.max(0, y)); }
         await wait(560);
       }
-      // L’aperçu se construit bloc par bloc (voir .hero.is-loading dans styles.css).
+      // La jauge se remplit, la bulle gonfle et l’aperçu se construit bloc par bloc.
+      gaugeFill.style.setProperty('--p', '0');
+      setText(gaugePct, '0' + NNB + '%');
+      setText(gaugeLabel, GAUGE_STEPS[0][1]);
+      setHidden(gauge, false);
       void stage.offsetWidth;
       hero.classList.remove('is-prep');
       hero.classList.add('is-loading');
-      await wait(1200);
-      // On entre dans la bulle : son cœur grandit jusqu’à recouvrir l’écran.
-      const b = bubbleEl.getBoundingClientRect();
-      const warp = document.createElement('div');
-      warp.className = 'warp';
-      warp.setAttribute('aria-hidden', 'true');
-      warp.style.left = b.left + 'px';
-      warp.style.top = b.top + 'px';
-      warp.style.width = b.width + 'px';
-      warp.style.height = b.height + 'px';
-      document.body.appendChild(warp);
-      const cx = b.left + b.width / 2;
-      const cy = b.top + b.height / 2;
-      const far = Math.hypot(Math.max(cx, window.innerWidth - cx), Math.max(cy, window.innerHeight - cy));
-      const cover = far / (b.width / 2 * 0.46); // échelle à partir de laquelle le cœur recouvre tout l’écran
-      const zoom = warp.animate([
-        { transform: 'scale(1)', opacity: 0 },
-        { transform: 'scale(1.1)', opacity: 1, offset: 0.14 },
-        { transform: 'scale(' + (cover * 1.6).toFixed(2) + ')', opacity: 1 }
-      ], { duration: 820, easing: 'cubic-bezier(.62,0,.3,1)', fill: 'forwards' });
-      await wait(500); // écran recouvert : le second écran apparaît depuis l’intérieur de la bulle
-      hero.classList.remove('is-loading');
+      await runGauge(1650);
+      // La bulle éclate.
+      hero.classList.remove('is-tense');
+      hero.classList.add('is-popping');
+      burst();
+      await wait(420);
+      document.documentElement.classList.add('is-leaving');
+      await wait(160);
       state.warping = false;
       clearTimeout(v.announceTimer);
       v.status.textContent = '';
+      resetLoading();
       showStep2(v);
-      warp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 420, easing: 'ease-out', fill: 'forwards' }).finished
-        .catch(() => {}).then(() => { zoom.cancel(); warp.remove(); });
     } catch (e) {
       // En cas d’imprévu, on passe simplement à l’étape 2.
-      hero.classList.remove('is-prep', 'is-loading');
-      $$('.warp').forEach((w) => w.remove());
       state.warping = false;
+      resetLoading();
       showStep2(v);
     }
   }

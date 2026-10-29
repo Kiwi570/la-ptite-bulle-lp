@@ -1182,19 +1182,48 @@ html.is-step2 #offer,html.is-step2 main,html.is-step2 .footer,html.is-step2 .ski
   .merci .merci-next{gap:12px;padding-top:clamp(14px,2.2vh,22px)}
 }
 @media (max-height:920px) and (min-width:600px){.merci .merci-ring{width:68px;height:68px}.merci .merci-num{font-size:27px}.merci .merci-dest{padding-block:13px}}
-/* v33 : passage animé vers le second écran — la bulle prépare l’aperçu, puis on entre dans la bulle */
+/* v33 : passage animé vers le second écran — jauge, bulle qui gonfle, éclatement */
 .hero.is-prep .mini-b,.hero.is-prep .mini-badge{transition:none!important;animation:none!important;opacity:0!important;scale:.5!important}
-.hero.is-loading .stage{scale:1.06;transition:scale .9s cubic-bezier(.2,.9,.3,1.25),--c1 .9s ease,--c2 .9s ease,--c3 .9s ease,--c4 .9s ease,--c5 .9s ease}
+.hero.is-loading .stage{scale:calc(1 + var(--swell,0) * .1);transition:--c1 .9s ease,--c2 .9s ease,--c3 .9s ease,--c4 .9s ease,--c5 .9s ease}
 .hero.is-loading .mini-b{opacity:1;scale:1}
-.hero.is-loading .mini-tag{transition-delay:.05s}
-.hero.is-loading .mini-h1{transition-delay:.2s}
-.hero.is-loading .mini-h2{transition-delay:.32s}
-.hero.is-loading .mini-img{transition-delay:.46s}
-.hero.is-loading .mini-btn{transition-delay:.62s}
-.hero.is-loading .mini-badge{animation-delay:.85s}
-.hero.is-loading .mini::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);translate:-120% 0;animation:mini-sweep 1.05s .12s cubic-bezier(.6,0,.3,1) forwards}
+.hero.is-loading .mini-tag{transition-delay:.1s}
+.hero.is-loading .mini-h1{transition-delay:.4s}
+.hero.is-loading .mini-h2{transition-delay:.55s}
+.hero.is-loading .mini-img{transition-delay:.8s}
+.hero.is-loading .mini-btn{transition-delay:1.05s}
+.hero.is-loading .mini-badge{animation-delay:1.25s}
+.hero.is-loading .mini::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);translate:-120% 0;animation:mini-sweep 1.2s .3s cubic-bezier(.6,0,.3,1) forwards}
 @keyframes mini-sweep{to{translate:120% 0}}
-.warp{position:fixed;z-index:200;border-radius:50%;pointer-events:none;opacity:0;will-change:transform,opacity;background:radial-gradient(circle closest-side,#141931 0%,#151A33 44%,rgba(195,177,247,.9) 56%,rgba(239,122,164,.85) 66%,rgba(127,212,234,.7) 78%,rgba(127,212,234,0) 96%)}
+.hero.is-loading .note,.hero.is-popping .note{animation:none!important;opacity:0!important;transition:opacity .25s ease}
+.hero.is-tense .stage{animation:tense .09s linear infinite}
+@keyframes tense{0%,100%{translate:0 0}25%{translate:1.2px -.8px}50%{translate:-1px 1px}75%{translate:.8px .6px}}
+/* jauge */
+.gauge{position:absolute;left:50%;top:calc(100% + clamp(16px,2.6vh,28px));z-index:5;width:min(88%,340px);translate:-50% 0;padding:12px 15px 14px;border-radius:16px;background:rgba(21,26,51,.82);border:1px solid rgba(246,241,231,.14);box-shadow:0 18px 40px -20px rgba(0,0,0,.75),0 0 0 1px rgba(127,212,234,.06) inset;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:gauge-in .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes gauge-in{from{opacity:0;translate:-50% 12px;scale:.96}to{opacity:1;translate:-50% 0;scale:1}}
+.gauge-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.gauge-label{font-weight:700;font-size:14.5px;line-height:1.2;color:var(--cream);white-space:nowrap}
+.gauge-pct{font-weight:800;font-size:14.5px;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--cyan)}
+.gauge-track{position:relative;height:9px;border-radius:99px;background:rgba(246,241,231,.12);overflow:hidden}
+.gauge-fill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p,0) * 100%);border-radius:inherit;background:linear-gradient(90deg,#7FD4EA,#C3B1F7 50%,#EF7AA4);box-shadow:0 0 14px rgba(239,122,164,.55);overflow:hidden}
+.gauge-fill::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:gauge-shine 1.1s linear infinite}
+@keyframes gauge-shine{to{left:110%}}
+.hero.is-popping .gauge{animation:gauge-out .4s .15s ease forwards}
+@keyframes gauge-out{to{opacity:0;translate:-50% 8px}}
+/* éclatement */
+.hero.is-popping .bubble{animation:bubble-pop .3s cubic-bezier(.4,0,.7,1) forwards!important}
+@keyframes bubble-pop{0%{scale:1;opacity:1}45%{scale:1.14;opacity:1}100%{scale:1.34;opacity:0;filter:blur(5px)}}
+.hero.is-popping .aura{opacity:0;transition:opacity .3s ease}
+.hero.is-popping .free{opacity:0;transition:opacity .2s ease}
+.hero.is-popping .face{animation:face-out .5s cubic-bezier(.3,.6,.4,1) forwards}
+@keyframes face-out{0%{scale:1;opacity:1}35%{scale:1.14;opacity:1}100%{scale:1.32;opacity:0;translate:0 -6%}}
+.burst{position:absolute;inset:0;z-index:4;pointer-events:none}
+.burst .drop{position:absolute;left:50%;top:50%;width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);border-radius:50%;background:radial-gradient(circle at 32% 30%,#fff 0 18%,var(--c) 58%,color-mix(in srgb,var(--c) 45%,transparent) 100%);box-shadow:0 0 14px color-mix(in srgb,var(--c) 80%,transparent),0 0 0 1px rgba(255,255,255,.35) inset;opacity:0;animation:drop-fly .85s cubic-bezier(.12,.75,.3,1) var(--dl) forwards}
+@keyframes drop-fly{0%{opacity:1;translate:0 0;scale:.5}12%{scale:1.1}70%{opacity:1}100%{opacity:0;translate:var(--dx) var(--dy);scale:.35}}
+.burst-ring{position:absolute;left:50%;top:50%;width:100%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:3px solid rgba(246,241,231,.8);box-shadow:0 0 30px rgba(127,212,234,.6),inset 0 0 30px rgba(239,122,164,.45);opacity:0;animation:ring-out .6s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes ring-out{0%{opacity:.95;scale:.96}100%{opacity:0;scale:1.6}}
+.burst-flash{position:absolute;left:50%;top:50%;width:86%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(circle closest-side,rgba(255,255,255,1),rgba(249,215,228,.7) 40%,rgba(127,212,234,0));opacity:0;animation:flash .42s ease-out forwards}
+@keyframes flash{0%{opacity:0;scale:.6}30%{opacity:1}100%{opacity:0;scale:1.35}}
+html.is-leaving main{opacity:0;transition:opacity .2s ease}
 /* v34 : sceau rond à côté de « Partenaire officiel Wix Legend » (en-tête uniquement ; dessin original, sans logo Wix) */
 .topbar .top-badge{gap:11px}
 .topbar .seal{position:relative;flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 34% 28%,#2B3566 0%,#1A2044 55%,#12172F 100%);box-shadow:0 8px 18px -8px rgba(127,212,234,.65),0 0 22px -6px rgba(239,122,164,.45)}
