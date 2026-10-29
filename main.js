@@ -355,10 +355,10 @@
 
   function renderStep2() {
     if (!step2.screen) return;
-    setText(step2.site, shownSite() || 'votre-site.fr');
-    setText(step2.miniUrl, shownName() || 'votre-site.fr');
+    if (step2.site) setText(step2.site, shownSite() || 'votre-site.fr');
+    if (step2.miniUrl) setText(step2.miniUrl, shownName() || 'votre-site.fr');
     const key = shownName().toLowerCase();
-    if (key && key !== step2Palette) {
+    if (step2.bubble && key && key !== step2Palette) {
       step2Palette = key;
       paletteFor(key).forEach((c, i) => step2.bubble.style.setProperty('--c' + (i + 1), c));
     }
@@ -373,8 +373,10 @@
     step2.box.classList.toggle('is-sending', state.sending);
     // E-mail complet : la bulle s’illumine et une enveloppe apparaît, prête à partir.
     const ready = /^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim());
-    step2.bubble.classList.toggle('is-ready', ready);
-    step2.bubble.classList.toggle('is-sending', state.sending);
+    if (step2.bubble) {
+      step2.bubble.classList.toggle('is-ready', ready);
+      step2.bubble.classList.toggle('is-sending', state.sending);
+    }
     // La coche verte n’apparaît pas tant qu’une faute de frappe probable est détectée.
     step2.box.classList.toggle('is-valid', ready && !state.sending && !suggestEmail(state.email));
     if (step2.field.value !== state.email) step2.field.value = state.email;

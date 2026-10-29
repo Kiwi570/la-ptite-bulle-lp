@@ -1371,6 +1371,32 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
   .e2 .e2-start{font-size:14.5px}
   .e2 .e2-reassure{font-size:12.5px}
 }
+/* v38 : second écran aéré — logo et nom au centre (plus de bulle ni de fil d’étapes), groupes bien espacés, retour discret en haut */
+.e2 .e2-top{min-height:clamp(56px,8.5vh,84px)}
+.e2 .e2-back{display:inline-flex;align-items:center;gap:8px;margin-left:-10px;padding:9px 14px 9px 10px;border-radius:999px;font-size:14px;font-weight:600;line-height:1;color:var(--muted);text-decoration:none;transition:color .2s ease,background .2s ease}
+.e2 .e2-back svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:translate .2s ease}
+.e2 .e2-back:hover{color:var(--cream);background:rgba(246,241,231,.06)}
+.e2 .e2-back:hover svg{translate:-3px 0}
+.e2 .e2-card{--e2-gap:clamp(24px,4.6vh,46px);gap:var(--e2-gap)}
+.e2 .e2-logo{gap:14px}
+.e2 .e2-logo .orb{width:clamp(50px,7.2vh,62px);height:clamp(50px,7.2vh,62px)}
+.e2 .e2-logo .logo-text{gap:7px;text-align:left}
+.e2 .e2-logo .logo-name{font-size:clamp(23px,2vw,28px)}
+.e2 .e2-logo .logo-sub{display:block;font-size:13px}
+.e2 .e2-intro{gap:8px}
+.e2 .e2-form{margin-top:0}
+.e2 .e2-q{margin-bottom:clamp(10px,1.7vh,16px)}
+.e2 .e2-sub{margin-bottom:clamp(22px,3.8vh,38px)}
+.e2 .e2-after{margin-top:calc(14px - var(--e2-gap))}
+.e2 .e2-reassure{margin-top:calc(var(--e2-gap) * -.4)}
+@media (max-width:480px){
+  .e2 .e2-card{--e2-gap:clamp(20px,4.2vh,38px)}
+  .e2 .e2-back{font-size:13.5px}
+  .e2 .e2-logo .logo-name{font-size:22px}
+  .e2 .e2-logo .logo-sub{font-size:12px}
+  .e2 .e2-sub{margin-bottom:20px}
+}
+@media (max-height:640px){.e2 .e2-card{--e2-gap:18px}.e2 .e2-logo .orb{width:44px;height:44px}}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
