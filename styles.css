@@ -1107,6 +1107,42 @@ html.is-step2 #offer,html.is-step2 main,html.is-step2 .footer,html.is-step2 .ski
   .e2-sub{font-size:15px;margin-bottom:16px}
 }
 
+/* v30 : premier écran allégé (règles limitées au bandeau, à l’en-tête et au premier écran) */
+/* Bandeau : une seule phrase, moins haut, retour à la ligne propre sur mobile */
+.offer-bar .offer-inner{min-height:0;padding-block:8px;gap:0;flex-wrap:wrap}
+.offer-bar .offer-text{display:block;margin:0;text-align:center;font-weight:600;font-size:14px;line-height:1.4;text-wrap:balance}
+.offer-bar .offer-text strong{font-weight:800}
+@media (min-width:1180px) and (min-height:560px){.offer-bar .offer-inner{min-height:0;padding-block:9px}.offer-bar .offer-text{font-size:14.5px}}
+@media (min-width:1900px) and (min-height:560px){.offer-bar .offer-inner{min-height:0}.offer-bar .offer-text{font-size:15.5px}}
+@media (max-height:500px){.offer-bar .offer-inner{min-height:0;padding-block:5px}}
+:root{--bar-h:36px}
+@media (min-width:1180px) and (min-height:560px){:root{--bar-h:38px}}
+@media (min-width:1900px) and (min-height:560px){:root{--bar-h:40px}}
+@media (max-width:480px){:root{--bar-h:55px}}
+/* Colonne de texte : titre sans soulignement, une seule phrase explicative */
+.hero-sub{margin:0;max-width:30em;font-weight:500;font-size:clamp(17px,min(1.45vw,2.4vh),21px);line-height:1.5;color:var(--muted);text-wrap:pretty;animation:rise-in .8s .5s var(--ease) both}
+.hero-sub strong{font-weight:800;color:var(--cream)}
+/* Formulaire : libellé visible, pas d’étiquette « gratuit », espacements resserrés */
+.hero .field-wrap{margin-top:8px}
+.hero .field-head label{font-size:15px}
+.hero .checks{gap:6px 10px}
+.hero .check-plain{color:var(--muted-2)}
+.hero .check-plain::before{content:"·";margin-right:2px;color:var(--muted-2)}
+@media (min-width:1080px){
+  :root .hero .hero-title{margin-top:0}
+  :root .hero .hero-sub{margin-top:clamp(14px,2.6vh,30px);font-size:clamp(17px,min(1.4vw,2.4vh),22px)}
+  :root .hero .field-block{margin-top:clamp(22px,4vh,48px);gap:10px}
+  :root .hero .hero-extra{margin-top:clamp(10px,1.6vh,18px)}
+}
+@media (max-width:1079px){.hero .hero-copy{gap:clamp(14px,2.4vh,22px)}.hero .field-block{margin-top:4px;gap:8px}.hero .field-wrap{margin-top:6px}}
+@media (max-width:560px){.hero-sub{font-size:16.5px}}
+/* Mise en page empilée : les bulles montantes du fond ne traversent plus le titre ni le formulaire */
+@media (max-width:1079px){.hero .hero-bg .rise{display:none}}
+/* Signature du logo conservée sur mobile, maintenant que l’en-tête est allégé */
+@media (min-width:360px) and (max-width:400px) and (min-height:501px){.topbar .logo-sub{display:block;font-size:11px}}
+/* Mention partenaire Wix : visible dans l’en-tête dès que la navigation l’est (place libérée par le bouton retiré) */
+@media (min-width:901px){.topbar .top-badge{display:flex}}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}

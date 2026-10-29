@@ -97,7 +97,7 @@
   function renderView(v) {
     const isDone = state.step === 3;
     const mine = state.active === v;
-    if (v === heroView) v.label.closest('.field-head').classList.toggle('is-quiet', !isDone);
+    if (v === heroView) v.label.closest('.field-head').classList.remove('is-quiet'); // libellé « Votre site actuel » toujours visible
     setHidden(v.wrap, isDone);
     setHidden(v.done, !isDone);
     if (v.card) {
