@@ -1069,7 +1069,7 @@
 
   const finalSection = $('#final');
   const finalBg = $('.final-bg', finalSection);
-  const finalOrb = $('.final-orb', finalSection);
+  const finalOrb = $('.final-orb', finalSection) || $('.final-bubble', finalSection);
   const finalBody = $('.fb-body', finalSection);
   const setFp = (v) => [finalBg, finalOrb].forEach((el) => { if (el) el.style.setProperty('--fp', v); });
   let finalTick = false;
