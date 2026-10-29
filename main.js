@@ -445,7 +445,7 @@
   }
 
   // Éclatement : flash, onde et gouttelettes irisées autour de la bulle.
-  function burst() {
+  function burst(target = stage, spread = 1) {
     const colors = ['#7FD4EA', '#C3B1F7', '#EF7AA4', '#F3CF7A', '#A8EEDB', '#F9D7E4'];
     const el = document.createElement('div');
     el.className = 'burst';
@@ -454,12 +454,12 @@
     const n = 26;
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-      const d = 55 + Math.random() * 55;
+      const d = (55 + Math.random() * 55) * spread;
       const size = i % 3 === 0 ? 6 + Math.random() * 5 : 11 + Math.random() * 12;
       html += '<span class="drop" style="--dx:' + (Math.cos(a) * d).toFixed(1) + 'cqw;--dy:' + (Math.sin(a) * d).toFixed(1) + 'cqw;--s:' + size.toFixed(1) + 'px;--c:' + colors[i % colors.length] + ';--dl:' + Math.round(Math.random() * 70) + 'ms"></span>';
     }
     el.innerHTML = html;
-    stage.appendChild(el);
+    target.appendChild(el);
     return el;
   }
 
@@ -1052,7 +1052,7 @@
   // Destination fixe, sans aucune donnée ajoutée à l’adresse.
 
   const MERCI_URL = 'https://www.ptit-kiwi.fr/';
-  const MERCI_SECONDS = 10;
+  const MERCI_SECONDS = 15;
   const merci = $('#merci');
   const merciTitle = $('#merci-title');
   const merciCount = $('#merci-count');
@@ -1063,6 +1063,64 @@
   const merciDest = $('#merci-dest');
   const merciNum = $('#merci-num');
   const merciRing = $('#merci .merci-ring-fg');
+  const merciOrb = $('#merci-orb');
+  const merciMiniUrl = $('#merci-mini-url');
+  const merciFor = $('#merci-for');
+  const merciSite = $('#merci-site');
+  const merciBurst = $('#merci-burst');
+  const merciPops = $('#merci-pops');
+  let popTimers = [];
+
+  // Écran personnalisé : la bulle reprend l’aperçu du site, et la phrase principale cite son adresse.
+  function merciPersonalize() {
+    const name = shownName();
+    if (merciMiniUrl) setText(merciMiniUrl, name || (state.noSite ? 'votre-activite.fr' : 'votre-site.fr'));
+    if (merciFor) setHidden(merciFor, state.noSite || !name);
+    if (merciSite && name) setText(merciSite, name);
+    if (merciOrb && name) paletteFor(name.toLowerCase()).forEach((c, i) => merciOrb.style.setProperty('--c' + (i + 1), c));
+  }
+
+  // Célébration : la bulle éclate en gouttelettes autour de la coche.
+  function merciCelebrate() {
+    if (!merciBurst || motionOff()) return;
+    merciBurst.textContent = '';
+    setTimeout(() => { if (merci.open) burst(merciBurst, 1.7); }, 380);
+  }
+
+  // Bulles à éclater sur les côtés pendant le décompte (grands écrans seulement, jamais sur le texte).
+  const POP_COLORS = ['239,122,164', '127,212,234', '195,177,247', '243,207,122', '168,238,219'];
+  function spawnPop() {
+    if (!merci.open || !merciPops) return;
+    const w = window.innerWidth, h = window.innerHeight;
+    const half = Math.min(400, w / 2 - 40);
+    const right = Math.random() < 0.5;
+    const x0 = right ? w / 2 + half : 36, x1 = right ? w - 36 : w / 2 - half;
+    if (x1 - x0 < 60) return;
+    const el = document.createElement('span');
+    el.className = 'merci-pop';
+    el.style.left = Math.round(x0 + Math.random() * (x1 - x0)) + 'px';
+    el.style.top = Math.round(h * (0.14 + Math.random() * 0.7)) + 'px';
+    el.style.setProperty('--s', Math.round(36 + Math.random() * 42) + 'px');
+    el.style.setProperty('--c', POP_COLORS[Math.floor(Math.random() * POP_COLORS.length)]);
+    el.style.setProperty('--d', (5 + Math.random() * 3).toFixed(1) + 's');
+    el.innerHTML = '<b></b><i></i><i></i><i></i><i></i><i></i><i></i>';
+    el.addEventListener('pointerdown', () => {
+      el.classList.add('is-popped');
+      setTimeout(() => el.remove(), 700);
+      popTimers.push(setTimeout(spawnPop, 1500));
+    }, { once: true });
+    merciPops.appendChild(el);
+  }
+  function stopPops() {
+    popTimers.forEach(clearTimeout);
+    popTimers = [];
+    if (merciPops) merciPops.textContent = '';
+  }
+  function startPops() {
+    stopPops();
+    if (!merciPops || motionOff() || window.innerWidth < 1100) return;
+    for (let i = 0; i < 6; i++) popTimers.push(setTimeout(spawnPop, 700 + i * 220));
+  }
   let merciTimer = 0;
   let merciStartTimer = 0;
   let merciLeft = 0;
@@ -1122,8 +1180,11 @@
     merciStay.hidden = false;
     merciStatus.textContent = '';
     $$('dialog[open]').forEach((d) => { if (d !== merci) d.close(); });
+    merciPersonalize();
     if (!merci.open) merci.showModal();
     merci.scrollTop = 0;
+    merciCelebrate();
+    startPops();
     try { merciTitle.focus({ preventScroll: true }); } catch (e) { merciTitle.focus(); }
     // Le décompte démarre une fois l’écran affiché (après son apparition).
     merciStartTimer = setTimeout(merciRun, motionOff() ? 0 : 450);
@@ -1131,6 +1192,7 @@
 
   function closeMerciQuietly() {
     merciStopTimer();
+    stopPops();
     merciStopped = true;
     if (merci.open) { merciClosing = true; merci.close(); }
     merciLeaving = false;

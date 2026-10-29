@@ -1263,6 +1263,71 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 .e2 .e2-st-line.is-done{background:linear-gradient(90deg,var(--cyan),var(--pink))}
 @media (max-height:780px){.e2 .e2-card{gap:clamp(8px,1.4vh,12px)}.e2 .e2-bubble{width:clamp(76px,11vh,100px)}.e2 .e2-next{margin-top:-4px;font-size:14.5px;line-height:1.45}.e2 .e2-sub{margin-bottom:12px}}
 @media (max-width:400px){.e2 .e2-stepper{gap:6px}.e2 .e2-st{font-size:12px;gap:5px}.e2 .e2-st i{width:22px;height:22px}.e2 .e2-st-line{width:12px}}
+/* v36 : remerciement — célébration, bulle personnalisée, « et maintenant ? » en 3 étapes, bulles à éclater (règles limitées à .merci) */
+.merci .merci-hero{position:relative;flex:none;width:clamp(96px,13vh,126px);aspect-ratio:1;container-type:inline-size}
+.merci .merci-hero .merci-orb{--c1:#EF7AA4;--c2:#C3B1F7;--c3:#7FD4EA;--c4:#A8EEDB;--c5:#F9D7E4;width:100%;animation:wobble 9s ease-in-out infinite}
+.merci[open] .merci-hero .merci-orb{animation:merci-orb-in .7s .1s cubic-bezier(.2,.9,.3,1.35) both,wobble 9s ease-in-out .8s infinite}
+@keyframes merci-orb-in{0%{scale:.4;opacity:0}60%{scale:1.08;opacity:1}100%{scale:1;opacity:1}}
+.merci .merci-mini{position:absolute;left:50%;top:52%;z-index:2;width:56%;aspect-ratio:1.45;translate:-50% -50%;border-radius:6px;overflow:hidden;background:#F7F3EC;box-shadow:0 10px 22px -10px rgba(0,0,0,.7)}
+.merci .merci-mini-bar{display:flex;align-items:center;justify-content:center;height:18%;background:#ECEFF6;border-bottom:1px solid #DDE2EE}
+.merci .merci-mini-bar span{max-width:86%;padding:0 4px;border-radius:99px;background:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:700;font-size:max(6px,5.4cqw);line-height:1.5;color:#4A5170}
+.merci .mm-b{position:absolute;border-radius:3px}
+.merci .mm-h1{left:9%;top:32%;width:44%;height:9%;background:#1B2140}
+.merci .mm-h2{left:9%;top:46%;width:30%;height:9%;background:var(--c2)}
+.merci .mm-img{right:9%;top:30%;width:32%;height:40%;border-radius:4px;background:var(--c3)}
+.merci .mm-btn{left:9%;top:64%;width:24%;height:10%;border-radius:99px;background:var(--c1)}
+.merci .merci-hero .merci-check{left:auto;top:auto;right:-6%;bottom:-4%;z-index:3;width:38%;translate:none;box-shadow:0 0 0 4px #151A33,0 0 0 8px rgba(127,212,234,.2),0 8px 18px -6px rgba(0,0,0,.6)}
+.merci[open] .merci-hero .merci-check{animation:pop-in .55s .55s cubic-bezier(.2,.9,.3,1.4) both}
+.merci .merci-check svg path{stroke-dasharray:100;stroke-dashoffset:0}
+.merci[open] .merci-check svg path{animation:check-draw .45s .85s ease-out both}
+@keyframes check-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.merci .merci-burst{position:absolute;inset:0;z-index:4;pointer-events:none}
+.merci .merci-desc{align-items:center;gap:clamp(12px,1.9vh,18px);max-width:36em}
+.merci .merci-desc .merci-lead{font-weight:600;font-size:clamp(17px,1.4vw,19px);color:var(--cream)}
+.merci .merci-lead strong{color:var(--cyan);font-weight:800}
+.merci .merci-steps{list-style:none;margin:0;padding:0;width:min(100%,560px);display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.merci .merci-steps li{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.merci .merci-steps li:not(:first-child)::before{content:"";position:absolute;top:18px;left:calc(-50% + 26px);right:calc(50% + 26px);height:2px;border-radius:2px;background:rgba(246,241,231,.16)}
+.merci .merci-steps li.is-on::before{background:linear-gradient(90deg,var(--cyan),var(--pink))}
+.merci .ms-ico{width:38px;height:38px;margin-bottom:6px;border-radius:50%;display:grid;place-items:center;color:var(--muted);background:rgba(246,241,231,.06);border:1px solid rgba(246,241,231,.18)}
+.merci .ms-ico svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.merci .is-done .ms-ico{background:var(--cyan);border-color:var(--cyan);color:var(--navy)}
+.merci .is-done .ms-ico svg{stroke-width:2.8}
+.merci .is-on .ms-ico{background:var(--pink);border-color:var(--pink);color:var(--navy);animation:st-pulse 2.4s ease-in-out infinite}
+.merci .is-on .ms-ico svg{fill:rgba(27,21,51,.25)}
+.merci .ms-t{font-weight:700;font-size:14px;line-height:1.25;color:var(--cream);text-wrap:balance}
+.merci .ms-s{font-weight:500;font-size:12.5px;line-height:1.3;color:var(--muted-2)}
+.merci .is-done .ms-s{color:var(--cyan)}
+.merci[open] .merci-steps li{animation:rise-in .5s var(--ease) both}
+.merci[open] .merci-steps li:nth-child(1){animation-delay:.55s}
+.merci[open] .merci-steps li:nth-child(2){animation-delay:.68s}
+.merci[open] .merci-steps li:nth-child(3){animation-delay:.81s}
+.merci .merci-desc .merci-spam{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(246,241,231,.06);border:1px solid rgba(246,241,231,.12);font-size:13.5px;line-height:1.35;color:var(--muted);text-wrap:balance}
+.merci .merci-spam svg{flex:none;width:17px;height:17px;fill:none;stroke:var(--butter);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.merci .merci-kiwi{text-wrap:balance}
+/* bulles à éclater */
+.merci .merci-pops{position:fixed;inset:0;z-index:2;pointer-events:none}
+.merci .merci-pop{position:absolute;width:var(--s);height:var(--s);translate:-50% -50%;pointer-events:auto;cursor:pointer;animation:merci-pop-in .5s cubic-bezier(.2,.9,.3,1.4) both,pop-float var(--d) ease-in-out .5s infinite;-webkit-tap-highlight-color:transparent}
+@keyframes merci-pop-in{from{scale:.2;opacity:0}to{scale:1;opacity:1}}
+.merci .merci-pop b{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75) 0 7%,rgba(255,255,255,.12) 22%,rgba(255,255,255,0) 46%),radial-gradient(circle closest-side,rgba(18,23,47,.35) 0 56%,rgba(var(--c),.32) 82%,rgba(var(--c),.7) 100%);box-shadow:inset 0 0 0 1px rgba(var(--c),.55),0 0 22px rgba(var(--c),.28);transition:scale .2s ease,opacity .25s ease}
+.merci .merci-pop:hover b{scale:1.08}
+.merci .merci-pop i{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:rgb(var(--c));opacity:0}
+.merci .merci-pop.is-popped{animation:none;cursor:default}
+.merci .merci-pop.is-popped b{scale:1.45;opacity:0}
+.merci .merci-pop.is-popped i{animation:merci-drop .6s cubic-bezier(.2,.7,.3,1) both}
+.merci .merci-pop i:nth-child(2){--dx:-34px;--dy:-22px}.merci .merci-pop i:nth-child(3){--dx:32px;--dy:-26px}.merci .merci-pop i:nth-child(4){--dx:-36px;--dy:20px}.merci .merci-pop i:nth-child(5){--dx:34px;--dy:22px}.merci .merci-pop i:nth-child(6){--dx:0;--dy:-40px}.merci .merci-pop i:nth-child(7){--dx:2px;--dy:38px}
+@keyframes merci-drop{0%{opacity:1;translate:0 0}100%{opacity:0;translate:var(--dx) var(--dy);scale:.4}}
+@media (max-width:480px){
+  .merci .merci-steps{gap:4px}
+  .merci .ms-ico{width:34px;height:34px}
+  .merci .merci-steps li:not(:first-child)::before{top:16px;left:calc(-50% + 22px);right:calc(50% + 22px)}
+  .merci .ms-t{font-size:12.5px}
+  .merci .ms-s{font-size:11.5px}
+  .merci .merci-desc .merci-spam{font-size:12.5px;padding:6px 12px;border-radius:14px}
+}
+@media (max-height:920px){.merci .merci-hero{width:clamp(76px,10.5vh,104px)}}
+@media (max-height:780px){.merci .merci-desc{gap:10px}.merci .ms-ico{width:32px;height:32px;margin-bottom:4px}.merci .merci-steps li:not(:first-child)::before{top:15px}.merci .merci-desc .merci-lead{font-size:16.5px}}
+@media (max-width:480px){.merci .merci-desc{gap:12px}.merci .merci-desc .merci-lead{font-size:16px}.merci .merci-desc .merci-spam{gap:7px;padding:5px 11px;font-size:12px}.merci .merci-spam svg{width:15px;height:15px}.merci .merci-hero{width:clamp(72px,10vh,96px)}}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
