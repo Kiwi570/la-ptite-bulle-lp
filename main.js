@@ -375,7 +375,8 @@
     const ready = /^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(state.email.trim());
     step2.bubble.classList.toggle('is-ready', ready);
     step2.bubble.classList.toggle('is-sending', state.sending);
-    step2.box.classList.toggle('is-valid', ready && !state.sending);
+    // La coche verte n’apparaît pas tant qu’une faute de frappe probable est détectée.
+    step2.box.classList.toggle('is-valid', ready && !state.sending && !suggestEmail(state.email));
     if (step2.field.value !== state.email) step2.field.value = state.email;
   }
 
@@ -531,12 +532,85 @@
     requestAnimationFrame(() => { try { v.field.focus({ preventScroll: true }); } catch (e) { v.field.focus(); } });
   }
 
+  // Fautes de frappe courantes dans l’e-mail (gmial.com, hotmial.fr, orange.fe…) : une correction est proposée, jamais imposée.
+  const MAIL_DOMAINS = ['gmail.com', 'hotmail.com', 'hotmail.fr', 'outlook.com', 'outlook.fr', 'live.fr', 'live.com', 'msn.com', 'yahoo.com', 'yahoo.fr', 'icloud.com', 'me.com', 'mac.com', 'mail.com', 'orange.fr', 'wanadoo.fr', 'free.fr', 'sfr.fr', 'neuf.fr', 'laposte.net', 'bbox.fr', 'aol.com', 'gmx.fr', 'gmx.com', 'protonmail.com', 'proton.me', 'numericable.fr'];
+  const MAIL_FIX = { 'gmail.fr': 'gmail.com', 'icloud.fr': 'icloud.com', 'googlemail.fr': 'googlemail.com' };
+  const TLD_FIX = { con: 'com', cpm: 'com', vom: 'com', xom: 'com', comm: 'com', fe: 'fr', ft: 'fr', frr: 'fr', rf: 'fr', nte: 'net', ner: 'net' };
+  // Noms reconnus tels quels (jamais « corrigés »), et noms assez longs pour qu’une faute soit détectée sans risque.
+  const MAIL_NAMES = MAIL_DOMAINS.map((d) => d.slice(0, d.lastIndexOf('.'))).concat(['ymail', 'email', 'googlemail', 'aliceadsl', 'club-internet', 'voila', 'skynet', 'bluewin', 'videotron', 'sympatico', 'libero', 'web', 'yandex', 'zoho', 'tutanota', 'posteo']);
+  const MAIL_FUZZY = ['gmail', 'hotmail', 'outlook', 'yahoo', 'icloud', 'orange', 'wanadoo', 'laposte', 'protonmail', 'numericable'];
+  // Distance d’édition avec inversion de deux lettres (gmial → gmail compte pour une seule faute).
+  function editDistance(a, b) {
+    const d = [];
+    for (let i = 0; i <= a.length; i++) { d[i] = [i]; }
+    for (let j = 0; j <= b.length; j++) { d[0][j] = j; }
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    return d[a.length][b.length];
+  }
+  function suggestEmail(raw) {
+    const v = String(raw || '').trim();
+    if (!/^[^\s@,;]+@(?:[^\s@.,;]+\.)+[^\s@.,;]{2,}$/.test(v)) return '';
+    const at = v.lastIndexOf('@');
+    const user = v.slice(0, at);
+    const dom = v.slice(at + 1).toLowerCase();
+    if (MAIL_DOMAINS.includes(dom)) return '';
+    let fixed = MAIL_FIX[dom] || '';
+    const m = dom.match(/^(.+)\.([a-z]+)$/);
+    if (!fixed && m) {
+      let name = m[1];
+      let tld = TLD_FIX[m[2]] || m[2];
+      if (!MAIL_NAMES.includes(name) && name.length >= 4) {
+        let best = '';
+        let bestD = 9;
+        MAIL_FUZZY.forEach((n) => { const k = editDistance(name, n); if (k < bestD) { bestD = k; best = n; } });
+        if (best && bestD <= (best.length >= 7 ? 2 : 1)) name = best;
+      }
+      if (MAIL_NAMES.includes(name) && !MAIL_DOMAINS.includes(name + '.' + tld) && !MAIL_FIX[name + '.' + tld]) {
+        // Messagerie connue avec une extension mal tapée (gmail.om, hotmail.cm) : extension la plus proche, à une lettre près.
+        const near = MAIL_DOMAINS.filter((d) => d.slice(0, d.lastIndexOf('.')) === name && editDistance(d.slice(d.lastIndexOf('.') + 1), tld) <= 1);
+        if (near.length) tld = near[0].slice(near[0].lastIndexOf('.') + 1);
+      }
+      let cand = name + '.' + tld;
+      cand = MAIL_FIX[cand] || cand;
+      if (cand !== dom && (MAIL_DOMAINS.includes(cand) || (name === m[1] && tld !== m[2]))) fixed = cand;
+    }
+    return fixed && fixed !== dom ? user + '@' + fixed : '';
+  }
+  const suggestBox = $('#e2-suggest-in');
+  const suggestBtn = $('#e2-suggest-btn');
+  const suggestSlot = $('#e2-after');
+  let suggestTimer = 0;
+  function showSuggestion(email) {
+    if (!suggestBox) return;
+    if (email) setText(suggestBtn, email);
+    setHidden(suggestBox, !email);
+    if (suggestSlot) suggestSlot.classList.toggle('has-suggest', !!email);
+  }
+
   if (step2.screen) {
     step2.field.addEventListener('input', () => {
       if (state.sending) return;
       state.email = step2.field.value;
       if (state.error) { state.error = ''; step2.box.classList.remove('is-nudge'); }
       render();
+      clearTimeout(suggestTimer);
+      showSuggestion('');
+      suggestTimer = setTimeout(() => showSuggestion(suggestEmail(state.email)), 550);
+    });
+    step2.field.addEventListener('blur', () => { clearTimeout(suggestTimer); if (!state.sending) showSuggestion(suggestEmail(state.email)); });
+    if (suggestBtn) suggestBtn.addEventListener('click', () => {
+      state.email = suggestBtn.textContent;
+      state.error = '';
+      showSuggestion('');
+      render();
+      try { step2.field.focus({ preventScroll: true }); } catch (e) { step2.field.focus(); }
+      announce(step2, 'Adresse corrigée' + NB + ': ' + state.email);
     });
     step2.edit.addEventListener('click', () => {
       if (state.sending) return;
@@ -560,6 +634,8 @@
       }
       state.sending = true;
       state.error = '';
+      clearTimeout(suggestTimer);
+      showSuggestion('');
       render();
       // Une même demande déjà enregistrée dans cette page n’est pas renvoyée (le serveur ignore aussi les doublons).
       const key = [state.noSite ? 'activite' : 'site', state.site.trim().toLowerCase(), state.email.trim().toLowerCase()].join('|');

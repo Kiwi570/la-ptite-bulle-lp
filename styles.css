@@ -1328,6 +1328,45 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 @media (max-height:920px){.merci .merci-hero{width:clamp(76px,10.5vh,104px)}}
 @media (max-height:780px){.merci .merci-desc{gap:10px}.merci .ms-ico{width:32px;height:32px;margin-bottom:4px}.merci .merci-steps li:not(:first-child)::before{top:15px}.merci .merci-desc .merci-lead{font-size:16.5px}}
 @media (max-width:480px){.merci .merci-desc{gap:12px}.merci .merci-desc .merci-lead{font-size:16px}.merci .merci-desc .merci-spam{gap:7px;padding:5px 11px;font-size:12px}.merci .merci-spam svg{width:15px;height:15px}.merci .merci-hero{width:clamp(72px,10vh,96px)}}
+/* v37 : second écran optimisé — formulaire plus haut, une seule promesse, aide à la saisie, preuve sociale (règles limitées à .e2) */
+.e2 .e2-bubble{width:clamp(84px,12.5vh,124px)}
+.e2 .e2-progress{display:flex;justify-content:center;max-width:100%}
+.e2 .e2-stepper{flex-wrap:nowrap;max-width:100%}
+.e2 .e2-st.is-done{min-width:0}
+.e2 .e2-site{display:inline-block;max-width:min(30vw,230px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font-weight:800;color:var(--cyan)}
+.e2 .e2-stepper .e2-edit{flex:none;margin-left:-2px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.e2 .e2-stepper .e2-edit:hover{color:var(--cream)}
+.e2 .e2-thanks{font-size:clamp(17px,1.4vw,20px)}
+.e2 .e2-sub .e2-next-hl{white-space:nowrap}
+.e2 .field .e2-ico-ok{opacity:0;scale:.4;stroke:#3FBF8F;stroke-width:2.2;transition:opacity .25s ease,scale .4s cubic-bezier(.2,.9,.3,1.6)}
+.e2 .field .e2-ico-mail{transition:opacity .2s ease}
+.e2 .field.is-valid .e2-ico-mail{opacity:0}
+.e2 .field.is-valid .e2-ico-ok{opacity:1;scale:1}
+.e2 .e2-ico{flex:none;display:grid}.e2 .e2-ico > svg{grid-area:1/1}
+.e2 .e2-suggest{margin:0;font-weight:500;font-size:14.5px;line-height:1.4;color:var(--muted);text-align:center}
+.e2 .e2-suggest > span{display:block}
+.e2 .e2-suggest .text-btn{font-size:inherit;font-weight:800;color:var(--butter);text-decoration:underline;text-underline-offset:3px}
+.e2 .e2-proof{display:inline-flex;align-items:center;gap:8px;margin-top:-2px;padding:6px 12px;border:0;border-radius:999px;background:none;font:inherit;font-weight:600;font-size:14px;line-height:1;color:var(--muted);cursor:pointer;transition:background .2s ease,color .2s ease}
+.e2 .e2-proof:hover{background:rgba(246,241,231,.06);color:var(--cream)}
+.e2 .e2-proof strong{color:var(--cream);font-weight:800}
+.e2 .e2-stars{display:flex;gap:2px}
+.e2 .e2-stars i{display:block;width:13px;height:13px;background:var(--butter);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.e2 .e2-after{display:grid;place-items:center;min-height:27px;margin-top:-2px}
+.e2 .e2-after > *{grid-area:1/1}
+/* Après un appui sur la correction, le lien des avis revient avec un léger délai : un second appui ne l’ouvre pas par erreur. */
+.e2 .e2-after .e2-proof{margin-top:0;transition:background .2s ease,color .2s ease,opacity .25s ease .45s,visibility 0s linear .45s}
+.e2 .e2-after.has-suggest .e2-proof{opacity:0;visibility:hidden;transition:opacity .15s ease,visibility 0s linear .15s}
+.e2 .e2-after.has-suggest .e2-suggest > span{animation:e2-suggest-in .3s ease both}
+@keyframes e2-suggest-in{from{opacity:0;translate:0 -4px}to{opacity:1;translate:0 0}}
+.e2 .e2-reassure{flex-direction:row;align-items:flex-start;justify-content:center;gap:8px;max-width:38em;margin:0 auto;text-align:left;font-size:13.5px}
+.e2 .e2-reassure svg{margin-top:1px;stroke-width:2}
+@media (max-width:480px){
+  .e2 .e2-st-label{display:none}
+  .e2 .e2-site{max-width:34vw}
+  .e2 .e2-stepper .e2-edit{font-size:12px}
+  .e2 .e2-proof{font-size:13px}
+  .e2 .e2-reassure{font-size:12.5px}
+}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
