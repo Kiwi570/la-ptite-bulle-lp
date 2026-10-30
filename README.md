@@ -25,7 +25,7 @@ Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (her
 
 ## Mise en ligne
 
-Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour.
+Hébergé sur Vercel : chaque `git push` sur `main` met le site à jour. Adresse officielle : https://wix.partenaire.ptitebulle.fr/ (balises `canonical`, `og:url` et `og:image`). Attention à la limite de l’offre gratuite Vercel : 100 déploiements par jour pour tout le compte ; au-delà, les push sont ignorés sans message.
 
 ## Date de fin
 

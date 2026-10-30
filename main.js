@@ -364,7 +364,7 @@
     }
     step2.field.readOnly = state.sending;
     step2.edit.disabled = state.sending;
-    setText(step2.ctaLabel, state.sending ? 'Enregistrement…' : 'Recevoir mon aperçu gratuit');
+    setText(step2.ctaLabel, state.sending ? 'Enregistrement…' : 'Recevoir ma maquette gratuite');
     const err = state.step === 2 ? state.error : '';
     setText(step2.msg, err);
     setHidden(step2.msg, !err);
