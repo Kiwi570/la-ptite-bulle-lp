@@ -1249,6 +1249,51 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
 }
 .final .final-card .field-head{justify-content:center;text-align:center}
 @media (max-width:560px){.final .final-trust{margin-top:clamp(28px,4vh,44px)}}
+/* v44 : audit 2 — flèche manuscrite tournée vers la bulle à toutes les tailles, raccords invisibles entre les sections, ligne d'offre équilibrée, pied de page sur deux lignes, remerciement compact sur les écrans peu hauts */
+.hero .note{flex-direction:row-reverse}
+.hero .hero-bg{-webkit-mask-image:linear-gradient(180deg,#000 0,#000 calc(100% - 160px),transparent 100%);mask-image:linear-gradient(180deg,#000 0,#000 calc(100% - 160px),transparent 100%)}
+.s2 .s2-bg{-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 160px,#000 calc(100% - 160px),transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 160px,#000 calc(100% - 160px),transparent 100%)}
+@media (min-width:561px){.final .eta-main{text-wrap:balance}}
+@media (max-width:560px){.final .eta-main .nowrap{white-space:normal}}
+.footer-legal .fl-line{display:block;text-wrap:balance}
+.footer-legal .fl-dot{display:none}
+@media (max-width:560px){.footer-legal .fl-line{display:inline}
+.footer-legal .fl-dot{display:inline}}
+@media (max-width:600px) and (max-height:760px){
+  .merci .merci-inner{padding-top:18px;padding-bottom:16px;gap:10px}
+  .merci .merci-hero{width:58px}
+  .merci .merci-desc{gap:9px}
+  .merci .merci-desc .merci-lead{font-size:15.5px;line-height:1.45}
+  .merci .merci-next{gap:9px;margin-top:0;padding-top:12px}
+  .merci .merci-kiwi{font-size:15.5px;line-height:1.35}
+  .merci .merci-dest{gap:12px;padding:11px 14px 11px 11px}
+  .merci .merci-ring{width:54px;height:54px}
+  .merci .merci-num{font-size:22px}
+  .merci .merci-dest-title{font-size:14.5px}
+  .merci .merci-dest-url{font-size:17px}
+  .merci .merci-dest .merci-count{font-size:13px}
+  .merci .merci-actions{gap:4px}
+  .merci .merci-actions .btn{min-height:50px;padding-block:10px}
+  .merci .merci-stay{min-height:40px}
+}
+@media (max-width:600px) and (max-height:680px){
+  .merci .merci-inner{padding-top:14px;gap:8px}
+  .merci .merci-hero{width:50px}
+  .merci .merci-title{font-size:26px}
+  .merci .ms-ico{width:28px;height:28px;margin-bottom:3px}
+  .merci .ms-ico svg{width:15px;height:15px}
+  .merci .merci-steps li:not(:first-child)::before{top:13px;left:calc(-50% + 20px);right:calc(50% + 20px)}
+  .merci .merci-desc .merci-spam{padding:4px 10px;font-size:11.5px}
+}
+@media (min-width:601px) and (max-height:700px){
+  .merci .merci-inner{padding-top:26px;padding-bottom:20px;gap:10px}
+  .merci .merci-hero{width:64px}
+  .merci .merci-title{font-size:clamp(28px,5.4vh,40px)}
+  .merci .merci-next{gap:10px;margin-top:0;padding-top:12px}
+  .merci .merci-dest{padding-block:10px}
+  .merci .merci-ring{width:58px;height:58px}
+  .merci .merci-num{font-size:24px}
+}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
