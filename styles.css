@@ -1316,7 +1316,7 @@ html{-webkit-tap-highlight-color:transparent}
 /* v47 : section d'avis sur fond blanc (entre le haut de page et l'avant/après) et bandeau de badges clés (avant la section finale) */
 .avs,.bdg{position:relative;z-index:2;background:var(--navy-2)}
 .bdg{background:var(--navy-3)}
-.avs-sheet,.bdg-sheet{position:relative;isolation:isolate;overflow:hidden;margin-inline:clamp(8px,1vw,16px);background:#FFFFFF;color:var(--ink)}
+.avs-sheet,.bdg-sheet{position:relative;isolation:isolate;overflow:hidden;width:min(100% - 2 * clamp(16px,4vw,64px),1640px);margin-inline:auto;background:#FFFFFF;color:var(--ink)}
 .avs-sheet{border-radius:clamp(28px,3.4vw,52px);padding-block:clamp(48px,7vh,76px) clamp(40px,6vh,64px)}
 .avs-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}
 .avs-glow{position:absolute;aspect-ratio:1;border-radius:50%}

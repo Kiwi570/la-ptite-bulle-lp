@@ -1133,7 +1133,7 @@
   function marquee(move, pxPerSec, minWidth) {
     const track = move.querySelector('.avs-track, .bdg-track');
     if (!track) return;
-    if (minWidth) {
+    if (minWidth && track.scrollWidth > 0) {
       const items = Array.from(track.children);
       let guard = 0;
       while (track.scrollWidth < minWidth && guard++ < 6) {
@@ -1147,8 +1147,10 @@
     move.style.setProperty('--mq-d', (width ? Math.max(24, Math.round(width / pxPerSec)) : 70) + 's');
     move.classList.add('is-ready');
   }
-  $$('.avs-move').forEach((move, i) => marquee(move, i ? 20 : 24));
-  $$('.bdg-move').forEach((move) => marquee(move, 34, Math.max(window.innerWidth, (window.screen && window.screen.width) || 0) + 240));
+  // On répète les cartes ou les badges jusqu’à couvrir toute la largeur, même sur un très grand écran.
+  const screenW = Math.max(window.innerWidth, (window.screen && window.screen.width) || 0);
+  $$('.avs-move').forEach((move, i) => marquee(move, i ? 20 : 24, Math.min(screenW, 1640) + 160));
+  $$('.bdg-move').forEach((move) => marquee(move, 34, screenW + 240));
   $$('.avs-row').forEach((row) => {
     // Sur écran tactile, poser le doigt sur une rangée la met en pause, le temps de lire.
     row.addEventListener('pointerdown', () => row.classList.add('is-held'));
