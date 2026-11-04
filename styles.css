@@ -1306,6 +1306,13 @@ html{-webkit-tap-highlight-color:transparent}
 .e2 .e2-thanks{text-wrap:balance}
 @media (max-width:359px){.e2 .field .btn-field{white-space:normal;height:auto;min-height:52px;padding-block:9px;line-height:1.2;text-align:center}
 .e2 #e2-cta-label{text-wrap:balance}}
+/* v46 : lien vers les mentions légales (pied de page et second écran) */
+.footer-legal .fl-link{color:var(--muted-2);text-decoration:underline;text-decoration-color:rgba(246,241,231,.3);text-underline-offset:3px;white-space:nowrap}
+.footer-legal .fl-link:hover{color:var(--cream)}
+.e2 .e2-legal{color:var(--muted);text-decoration:underline;text-decoration-color:rgba(246,241,231,.35);text-underline-offset:3px;white-space:nowrap}
+.e2 .e2-legal:hover{color:var(--cream)}
+@media (pointer:coarse){.footer-legal .fl-link{padding-block:13px;margin-block:-13px}
+.e2 .e2-legal{padding-block:12px}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }

@@ -20,7 +20,7 @@ Données envoyées : `type` (site ou activité), `site`, `email`, `origine` (her
 
 ## À compléter avant de diffuser
 
-- **Mentions légales et confidentialité** : obligatoires dès qu’on collecte des e-mails. Ajoutez le lien dans le pied de page (emplacement indiqué en commentaire).
+- **Mentions légales et confidentialité** : page `mentions-legales.html` (adresse `/mentions-legales`), reliée au pied de page et au second écran (« Vos données »). Éditeur P’tit Kiwi SAS, hébergeur Vercel, base Upstash, conservation des demandes 3 ans après le dernier échange. À compléter : numéro de téléphone de l’éditeur (exigé par la loi). À mettre à jour si les prestataires, les données recueillies ou la durée de conservation changent.
 - **Phrase sur les données** (étape 2 du formulaire) : à vérifier selon votre politique réelle.
 
 ## Mise en ligne
