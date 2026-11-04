@@ -1149,7 +1149,7 @@
   }
   // On répète les cartes ou les badges jusqu’à couvrir toute la largeur, même sur un très grand écran.
   const screenW = Math.max(window.innerWidth, (window.screen && window.screen.width) || 0);
-  $$('.avs-move').forEach((move, i) => marquee(move, i ? 20 : 24, Math.min(screenW, 1640) + 160));
+  $$('.avs-move').forEach((move) => marquee(move, 24, Math.min(screenW, 1640) + 160));
   $$('.bdg-move').forEach((move) => marquee(move, 34, screenW + 240));
   $$('.avs-row').forEach((row) => {
     // Sur écran tactile, poser le doigt sur une rangée la met en pause, le temps de lire.

@@ -1341,7 +1341,6 @@ html{-webkit-tap-highlight-color:transparent}
 .avs-row:focus-visible{box-shadow:inset 0 0 0 2px #7FD4EA;border-radius:20px}
 .avs-move,.bdg-move{display:flex;width:max-content}
 .js .avs-move.is-ready{animation:avs-left var(--mq-d,64s) linear infinite}
-.js .avs-row-2 .avs-move.is-ready{animation-direction:reverse}
 html:not(.js) .avs-row{overflow-x:auto}
 .avs-row:hover .avs-move,.avs-row:focus-within .avs-move,.avs-row.is-held .avs-move{animation-play-state:paused}
 @keyframes avs-left{to{transform:translateX(-50%)}}
@@ -1399,7 +1398,6 @@ html:not(.js) .avs-row{overflow-x:auto}
 @media (max-width:600px){
   .avs-sheet{padding-block:48px 40px}
   .avs-eyebrow{font-size:13.5px;margin-bottom:14px}
-  .avs-row-2{display:none}
   .avs-row{padding-block:14px}
   .avs-card{width:min(80vw,300px);padding:20px 20px 18px}
   .avs-text{font-size:15px}
