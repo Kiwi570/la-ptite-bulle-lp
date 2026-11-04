@@ -1124,6 +1124,52 @@
     finalSection.classList.add('is-in');
   }
 
+  /* ---------- Avis et badges : défilement doux, pause au toucher, bulles à éclater ---------- */
+
+  const avisSection = $('#avis-clients');
+  const badgeSection = $('.bdg');
+  // Défilement continu : la page ne contient qu’une série ; la copie (cachée aux lecteurs d’écran) est ajoutée ici,
+  // et la durée suit la longueur pour garder une vitesse douce et égale sur tous les écrans.
+  function marquee(move, pxPerSec, minWidth) {
+    const track = move.querySelector('.avs-track, .bdg-track');
+    if (!track) return;
+    if (minWidth) {
+      const items = Array.from(track.children);
+      let guard = 0;
+      while (track.scrollWidth < minWidth && guard++ < 6) {
+        items.forEach((el) => { const c = el.cloneNode(true); c.setAttribute('aria-hidden', 'true'); track.appendChild(c); });
+      }
+    }
+    const copy = track.cloneNode(true);
+    copy.setAttribute('aria-hidden', 'true');
+    move.appendChild(copy);
+    const width = track.scrollWidth;
+    move.style.setProperty('--mq-d', (width ? Math.max(24, Math.round(width / pxPerSec)) : 70) + 's');
+    move.classList.add('is-ready');
+  }
+  $$('.avs-move').forEach((move, i) => marquee(move, i ? 20 : 24));
+  $$('.bdg-move').forEach((move) => marquee(move, 34, Math.max(window.innerWidth, (window.screen && window.screen.width) || 0) + 240));
+  $$('.avs-row').forEach((row) => {
+    // Sur écran tactile, poser le doigt sur une rangée la met en pause, le temps de lire.
+    row.addEventListener('pointerdown', () => row.classList.add('is-held'));
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((type) => row.addEventListener(type, () => row.classList.remove('is-held')));
+  });
+  $$('.avs-bub').forEach((bub) => bub.addEventListener('pointerdown', () => {
+    if (bub.classList.contains('is-popped')) return;
+    bub.classList.add('is-popped');
+    setTimeout(() => bub.classList.remove('is-popped'), motionOff() ? 600 : 2600);
+  }));
+  if (avisSection) {
+    if ('IntersectionObserver' in window) {
+      const avisSeen = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) { avisSection.classList.add('is-in'); avisSeen.disconnect(); }
+      }, { threshold: 0.15 });
+      avisSeen.observe(avisSection);
+    } else {
+      avisSection.classList.add('is-in');
+    }
+  }
+
   /* ---------- Animations : pause hors écran et bouton pause ---------- */
 
   if ('IntersectionObserver' in window) {
@@ -1133,6 +1179,8 @@
     watcher.observe(hero);
     watcher.observe(s2);
     watcher.observe(finalSection);
+    if (avisSection) watcher.observe(avisSection);
+    if (badgeSection) watcher.observe(badgeSection);
   }
 
   const motionBtn = $('#motion-toggle');
@@ -1328,11 +1376,16 @@
     window.addEventListener('pageshow', (event) => { if (event.persisted && merci.open) closeMerciQuietly(); });
   }
 
-  /* ---------- Panneaux Avis et FAQ ---------- */
+  /* ---------- Panneaux Avis, FAQ et mentions légales ---------- */
 
-  $$('[data-open]').forEach((btn) => btn.addEventListener('click', () => {
+  $$('[data-open]').forEach((btn) => btn.addEventListener('click', (event) => {
     const dialog = document.getElementById(btn.dataset.open);
-    if (dialog && !dialog.open) dialog.showModal();
+    if (!dialog) return; // sans panneau, un lien mène simplement à sa page
+    if (btn.tagName === 'A') event.preventDefault();
+    if (!dialog.open) dialog.showModal();
+    // Lien « Vos données » : le panneau des mentions légales s’ouvre sur la bonne partie.
+    const jump = btn.dataset.jump ? document.getElementById(btn.dataset.jump) : null;
+    if (jump && dialog.contains(jump)) requestAnimationFrame(() => { try { jump.scrollIntoView({ block: 'start' }); } catch (e) { jump.scrollIntoView(); } });
     // Lien « Que comprend l’offre ? » : ouvre directement la bonne réponse de la FAQ.
     const item = btn.dataset.faq ? document.getElementById(btn.dataset.faq) : null;
     if (dialog && item && dialog.contains(item)) {
