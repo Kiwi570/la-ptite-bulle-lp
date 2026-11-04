@@ -1294,6 +1294,21 @@ html.is-leaving main{opacity:0;transition:opacity .2s ease}
   .merci .merci-ring{width:58px;height:58px}
   .merci .merci-num{font-size:24px}
 }
+/* v45 : mobile — pas de voile gris au toucher, retour visuel à l'appui, bulle découpée net sur Safari, bouton du second écran sur les très petits écrans, zones d'appui agrandies */
+html{-webkit-tap-highlight-color:transparent}
+.hero .rim,.hero .core,.hero .core-tint{border-radius:50%}
+@supports (-webkit-touch-callout:none){.hero .bubble{-webkit-mask-image:-webkit-radial-gradient(white,black)}}
+@media (hover:none){
+  .btn:active{scale:.97;filter:brightness(.94)}
+  .text-btn:active,button.rating:active,.topbar .nav > :active,.pill button:active,.logo:active,.cue:active,.motion-toggle:active,.e2-proof:active{opacity:.7}
+}
+@media (pointer:coarse){
+  .offer-note .text-btn,.hero button.rating,.final-trust button.rating,.topbar .nav > *{position:relative}
+  .offer-note .text-btn::after,.hero button.rating::after,.final-trust button.rating::after,.topbar .nav > *::after{content:"";position:absolute;inset:-8px 0}
+}
+.e2 .e2-thanks{text-wrap:balance}
+@media (max-width:359px){.e2 .field .btn-field{white-space:normal;height:auto;min-height:52px;padding-block:9px;line-height:1.2;text-align:center}
+.e2 #e2-cta-label{text-wrap:balance}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }

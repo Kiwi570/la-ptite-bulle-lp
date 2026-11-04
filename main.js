@@ -1,6 +1,8 @@
 (() => {
   'use strict';
   document.documentElement.classList.add('js');
+  // Sur iPhone, l’état « appuyé » (:active) des boutons ne s’affiche que si la page écoute le toucher.
+  document.addEventListener('touchstart', () => {}, { passive: true });
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -134,6 +136,8 @@
     f.name = state.noSite ? 'activite' : 'site';
     f.autocomplete = state.noSite ? 'off' : 'url';
     f.inputMode = state.noSite ? 'text' : 'url';
+    f.setAttribute('autocapitalize', state.noSite ? 'sentences' : 'none');
+    f.setAttribute('autocorrect', state.noSite ? 'on' : 'off');
     f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
     setText(v.ctaLabel, 'Découvrir mon futur site');
     f.readOnly = state.warping && mine;
