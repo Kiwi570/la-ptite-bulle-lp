@@ -1,5 +1,26 @@
 (() => {
   'use strict';
+
+  // lpb-attribution-v3 : référence opaque du lien, conservée en mémoire pour les deux étapes.
+  function lireSourceMessage(location) {
+    try {
+      const u = new URL(location.href);
+      const f = new URLSearchParams(u.hash.replace(/^#/, ''));
+      const candidats = [f.get('lpb_ref'), u.searchParams.get('lpb_ref')].filter(Boolean);
+      if (!candidats.length || candidats.some(x => !/^[a-f0-9]{64}$/.test(x)) || new Set(candidats).size !== 1) return '';
+      return candidats[0];
+    } catch (_) { return ''; }
+  }
+  const sourceMessage = lireSourceMessage(window.location);
+  function pageSansReference() {
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.delete('lpb_ref');
+      if (new URLSearchParams(u.hash.replace(/^#/, '')).has('lpb_ref')) u.hash = '';
+      return u.href;
+    } catch (_) { return window.location.origin + window.location.pathname; }
+  }
+
   document.documentElement.classList.add('js');
   // Sur iPhone, l’état « appuyé » (:active) des boutons ne s’affiche que si la page écoute le toucher.
   document.addEventListener('touchstart', () => {}, { passive: true });
@@ -219,10 +240,11 @@
     const payload = {
       etape: 'site',
       ref: visitRef,
+      source_message: sourceMessage,
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
       origine: v === heroView ? 'hero' : 'final',
-      page: window.location.href,
+      page: pageSansReference(),
       lp_hp: ''
     };
     const ctrl = 'AbortController' in window ? new AbortController() : null;
@@ -255,11 +277,12 @@
     const payload = {
       etape: 'email',
       ref: visitRef,
+      source_message: sourceMessage,
       type: state.noSite ? 'activite' : 'site',
       site: state.site.trim(),
       email: state.email.trim(),
       origine: state.originView === heroView ? 'hero' : 'final',
-      page: window.location.href,
+      page: pageSansReference(),
       lp_hp: trapValue,
       date: new Date().toISOString()
     };
