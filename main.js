@@ -1378,6 +1378,13 @@
     window.addEventListener('pageshow', (event) => { if (event.persisted && merci.open) closeMerciQuietly(); });
   }
 
+  // Menu « Avis » : descend à la section des avis (le panneau des 30 avis reste accessible depuis la section).
+  $$('[data-scroll]').forEach((btn) => btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.scroll);
+    if (!target) return;
+    try { target.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' }); } catch (e) { target.scrollIntoView(); }
+  }));
+
   /* ---------- Panneaux Avis, FAQ et mentions légales ---------- */
 
   $$('[data-open]').forEach((btn) => btn.addEventListener('click', (event) => {

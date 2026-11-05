@@ -710,7 +710,7 @@ html:not(.offer-ended) .hero-copy{gap:clamp(14px,2.6vh,28px)}
 .topbar .nav a{display:none}
 .topbar .nav button{padding:9px 13px;border:1px solid rgba(246,241,231,.16);border-radius:999px;background:rgba(18,23,47,.55);font-size:14px;color:var(--cream)}
 }
-@media (max-width:340px){.topbar .nav button[data-open="panel-avis"]{display:none}
+@media (max-width:340px){.topbar .nav button[data-scroll="avis-clients"]{display:none}
 }
 .year-note{left:.4cqw}
 /* v23 : corrections code, accessibilité et performance */
@@ -1447,6 +1447,16 @@ html:not(.js) .avs-row{overflow-x:auto}
 .panel-legal .lg-table td{padding:2px 0;border:0}
 .panel-legal .lg-table td[data-l]::before{content:attr(data-l) " : ";color:var(--muted-2);font-weight:600}}
 @media (prefers-reduced-motion:reduce){.bdg-sheet{border-radius:32px}}
+/* v49 : fluidité — mêmes effets, calculés par la carte graphique : ondulation des bulles par étirement (au lieu de changer leur forme), halos et points lumineux sur leur propre calque, couleurs irisées à 24 images par seconde, bandeaux défilants sur leur calque */
+@keyframes wobble{0%,100%{scale:1 1}25%{scale:1.014 .988}50%{scale:.99 1.012}75%{scale:1.008 .992}}
+@keyframes iris-shift{from{animation-timing-function:steps(240,end)}to{background-position:200% 0}}
+.aura,.glow-pink,.merci-glow-pink{will-change:scale}
+.hero .bubble,.merci-orb,.e2-bubble{will-change:transform,scale}
+.avs-move.is-ready,.bdg-move.is-ready{will-change:transform}
+.pulse-dot span{animation:none}
+.pulse-dot::before{content:"";position:absolute;inset:4px;border-radius:50%;background:rgba(127,212,234,.55);animation:pulse-ring 2.4s ease-out infinite;will-change:scale,opacity}
+@keyframes pulse-ring{0%{scale:1;opacity:1}70%,100%{scale:3.3;opacity:0}}
+.topbar .logo-text{justify-content:center}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
 *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
