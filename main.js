@@ -80,7 +80,6 @@
   const endpoint = (heroView.form.dataset.endpoint || '').trim();
 
   const state = { step: 1, site: '', email: '', noSite: false, nudge: false, error: '', sending: false, warping: false, boing: 0, active: heroView, originView: heroView, scrollY: 0 };
-  const sentKeys = new Set();
 
   // Identifiant de la visite (en mémoire seulement) : relie l’adresse enregistrée à l’étape 1 et l’e-mail de l’étape 2.
   function newVisitRef() {
@@ -160,14 +159,18 @@
     f.setAttribute('autocapitalize', state.noSite ? 'sentences' : 'none');
     f.setAttribute('autocorrect', state.noSite ? 'on' : 'off');
     f.placeholder = state.noSite ? 'Fleuriste, coach, boulangerie…' : 'www.votre-site.fr';
-    setText(v.ctaLabel, 'Découvrir mon futur site');
-    f.readOnly = state.warping && mine;
+    setText(v.ctaLabel, state.sending && state.step === 1 ? 'Enregistrement…' : 'Découvrir mon futur site');
+    f.readOnly = state.sending || state.warping;
+    v.toggle.disabled = state.sending || state.warping;
+    const submit = v.form.querySelector('button[type="submit"]');
+    if (submit) submit.disabled = state.sending || state.warping;
+    v.form.setAttribute('aria-busy', String(state.sending || state.warping));
     const err = mine && state.step === 1 ? state.error : '';
     setText(v.stepText, err);
     v.stepText.classList.toggle('is-error', Boolean(err));
     if (err) f.setAttribute('aria-invalid', 'true');
     else f.removeAttribute('aria-invalid');
-    v.form.classList.toggle('is-sending', state.warping && mine); // passage animé vers l’étape 2 en cours
+    v.form.classList.toggle('is-sending', (state.sending || state.warping) && mine);
     if (!mine) v.form.classList.remove('is-nudge');
     if (f.value !== state.site) f.value = state.site;
   }
@@ -232,11 +235,12 @@
     return /^(?:[a-z0-9\u00a1-\uffff](?:[a-z0-9\u00a1-\uffff-]*[a-z0-9\u00a1-\uffff])?\.)+[a-z\u00a1-\uffff]{2,}$/.test(host);
   }
 
-  // Étape 1 : l’adresse du site est enregistrée dès sa validation (demande « e-mail en attente » dans le Studio).
-  // L’envoi se fait en arrière-plan : la suite du parcours n’attend pas la réponse.
+  // Étape 1 : l’URL est enregistrée sans email avant d’ouvrir le second écran.
+  // La même référence est conservée pour les réessais et l’ajout ultérieur de l’email.
   function saveSite(v) {
     const trapValue = [...views, step2].map((x) => (x.trap ? x.trap.value : '')).find(Boolean) || '';
-    if (trapValue || !endpoint) { sitePending = null; return; }
+    if (trapValue) { sitePending = Promise.resolve(true); return sitePending; } // Piège anti-robots : aucune écriture.
+    if (!endpoint) { sitePending = Promise.resolve(false); return sitePending; }
     const payload = {
       etape: 'site',
       ref: visitRef,
@@ -256,6 +260,7 @@
       signal: ctrl ? ctrl.signal : undefined
     }).then((r) => (r.ok ? r.json().catch(() => null) : null)).then((d) => Boolean(d && d.ok === true))
       .catch(() => false).finally(() => clearTimeout(timer));
+    return sitePending;
   }
 
   async function sendRequest() {
@@ -272,8 +277,8 @@
       console.error('La P’tite Bulle : attribut data-endpoint manquant sur #lp-form, demande non enregistrée.');
       return false;
     }
-    // L’adresse de l’étape 1 part en premier : on laisse à son envoi le temps d’aboutir (4 s au plus).
-    if (sitePending) await Promise.race([sitePending, new Promise((resolve) => setTimeout(resolve, 4000))]);
+    // L’URL doit avoir été confirmée avant de compléter cette demande avec l’email.
+    if (!sitePending || !(await sitePending)) return false;
     const payload = {
       etape: 'email',
       ref: visitRef,
@@ -339,13 +344,26 @@
           fail(v, 'Cette adresse semble incomplète. Exemple' + NB + ': monsite.fr');
           return;
         }
-        saveSite(v);
-        goToStep2(v);
+        state.sending = true;
+        state.error = '';
+        render();
+        announce(v, 'Enregistrement de l’adresse de votre site…');
+        let saved = false;
+        try { saved = await saveSite(v); }
+        catch (e) { saved = false; }
+        finally { state.sending = false; }
+        if (!saved) {
+          fail(v, 'L’adresse de votre site n’a pas pu être confirmée. Votre saisie est conservée : réessayez.');
+          return;
+        }
+        render();
+        await goToStep2(v);
       }
     });
 
     v.restart.addEventListener('click', () => { reset(v); focusField(v, 20); });
     v.toggle.addEventListener('click', () => {
+      if (state.sending || state.warping) return;
       state.active = v;
       state.noSite = !state.noSite;
       state.site = '';
@@ -666,16 +684,15 @@
       clearTimeout(suggestTimer);
       showSuggestion('');
       render();
-      // Une même demande déjà enregistrée dans cette page n’est pas renvoyée (le serveur ignore aussi les doublons).
-      const key = [state.noSite ? 'activite' : 'site', state.site.trim().toLowerCase(), state.email.trim().toLowerCase()].join('|');
+      // Les doubles clics sont bloqués par state.sending. Chaque finalisation attend
+      // le serveur, qui dédoublonne par référence de visite, jamais par URL/email.
       const pause = new Promise((resolve) => setTimeout(resolve, motionOff() ? 0 : 700));
-      const ok = sentKeys.has(key) ? (await pause, true) : (await Promise.all([sendRequest(), pause]))[0];
+      const ok = (await Promise.all([sendRequest(), pause]))[0];
       state.sending = false;
       if (!ok) {
         failStep2('L’envoi n’a pas abouti. Réessayez dans un instant.');
         return;
       }
-      sentKeys.add(key);
       state.step = 3;
       try { if (history.state && history.state.lpbStep === 2) history.replaceState(null, ''); } catch (e) { /* rien */ }
       setScreen(false);
@@ -1444,3 +1461,4 @@
 
   render();
 })();
+
